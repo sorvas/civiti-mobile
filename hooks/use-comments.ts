@@ -17,6 +17,7 @@ import {
   voteCommentHelpful,
 } from '@/services/comments';
 import type { PagedResult } from '@/types/api';
+import { ApiError } from '@/services/errors';
 import type {
   CommentResponse,
   CreateCommentRequest,
@@ -30,7 +31,7 @@ const PAGE_SIZE = 12;
 
 function showMutationError(err: unknown) {
   const message =
-    err instanceof Error && err.message.includes('429')
+    err instanceof ApiError && err.status === 429
       ? Localization.errors.tooManyRequests
       : Localization.errors.generic;
   Alert.alert(message);
