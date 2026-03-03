@@ -1,27 +1,104 @@
-import { StyleSheet, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useCallback } from 'react';
+import { Alert, Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { Avatar } from '@/components/ui/avatar';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Localization } from '@/constants/localization';
-import { Spacing } from '@/constants/spacing';
+import { BorderRadius, Spacing } from '@/constants/spacing';
+import { useCommentVote, useDeleteComment } from '@/hooks/use-comments';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { useAuth } from '@/store/auth-context';
 import type { CommentResponse } from '@/types/comments';
 import { formatTimeAgo } from '@/utils/format-time-ago';
 
 type CommentItemProps = {
   comment: CommentResponse;
+  issueId: string;
+  currentUserId: string | undefined;
+  parentAuthorName: string | null;
+  onReply: (comment: CommentResponse) => void;
+  onStartEdit: (comment: CommentResponse) => void;
+  isEditing: boolean;
+  editText: string;
+  onEditTextChange: (text: string) => void;
+  onEditSave: () => void;
+  onEditCancel: () => void;
 };
 
-export function CommentItem({ comment }: CommentItemProps) {
+export function CommentItem({
+  comment,
+  issueId,
+  currentUserId,
+  parentAuthorName,
+  onReply,
+  onStartEdit,
+  isEditing,
+  editText,
+  onEditTextChange,
+  onEditSave,
+  onEditCancel,
+}: CommentItemProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const border = useThemeColor({}, 'border');
+  const accent = useThemeColor({}, 'accent');
+  const surface = useThemeColor({}, 'surface');
+  const textColor = useThemeColor({}, 'text');
+
+  const { requireAuth } = useAuth();
+  const { mutate: toggleVote, isPending: isVotePending } = useCommentVote(issueId, comment.id);
+  const { mutate: deleteCommentFn, isPending: isDeletePending } = useDeleteComment(issueId);
+
+  const isOwn = currentUserId != null && comment.user.id === currentUserId;
+
+  const handleVote = useCallback(() => {
+    if (isVotePending) return;
+    requireAuth(() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      toggleVote(comment.hasVoted);
+    });
+  }, [isVotePending, requireAuth, toggleVote, comment.hasVoted]);
+
+  const handleReply = useCallback(() => {
+    requireAuth(() => {
+      onReply(comment);
+    });
+  }, [requireAuth, onReply, comment]);
+
+  const handleEdit = useCallback(() => {
+    onStartEdit(comment);
+  }, [onStartEdit, comment]);
+
+  const handleDelete = useCallback(() => {
+    if (isDeletePending) return;
+    Alert.alert(
+      Localization.comments.deleteConfirmTitle,
+      Localization.comments.deleteConfirmMessage,
+      [
+        { text: Localization.actions.cancel, style: 'cancel' },
+        {
+          text: Localization.comments.deleteConfirmYes,
+          style: 'destructive',
+          onPress: () => {
+            deleteCommentFn(comment.id);
+          },
+        },
+      ],
+    );
+  }, [isDeletePending, deleteCommentFn, comment.id]);
 
   return (
     <View style={[styles.container, { borderBottomColor: border }]}>
+      {/* Reply-to indicator */}
       {comment.parentCommentId ? (
         <View style={styles.replyIndicator}>
           <View style={[styles.replyLine, { backgroundColor: border }]} />
+          {parentAuthorName ? (
+            <ThemedText type="caption" style={{ color: textSecondary }}>
+              {Localization.comments.replyIndicator(parentAuthorName)}
+            </ThemedText>
+          ) : null}
         </View>
       ) : null}
 
@@ -45,16 +122,121 @@ export function CommentItem({ comment }: CommentItemProps) {
             <ThemedText type="caption" style={{ color: textSecondary }}>
               · {formatTimeAgo(comment.createdAt)}
             </ThemedText>
+            {comment.isEdited && !comment.isDeleted ? (
+              <ThemedText type="caption" style={{ color: textSecondary }}>
+                {Localization.comments.edited}
+              </ThemedText>
+            ) : null}
           </View>
 
+          {/* Content or inline edit */}
           {comment.isDeleted ? (
             <ThemedText type="body" style={{ color: textSecondary, fontStyle: 'italic' }}>
               {Localization.comments.deleted}
             </ThemedText>
+          ) : isEditing ? (
+            <View style={styles.editContainer}>
+              <TextInput
+                style={[
+                  styles.editInput,
+                  {
+                    color: textColor,
+                    borderColor: accent,
+                    backgroundColor: surface,
+                  },
+                ]}
+                value={editText}
+                onChangeText={onEditTextChange}
+                multiline
+                maxLength={2000}
+                autoFocus
+              />
+              <View style={styles.editActions}>
+                <Pressable onPress={onEditCancel} hitSlop={12} style={styles.editActionButton}>
+                  <ThemedText type="caption" style={{ color: textSecondary }}>
+                    {Localization.comments.editCancel}
+                  </ThemedText>
+                </Pressable>
+                <Pressable onPress={onEditSave} hitSlop={12} style={styles.editActionButton}>
+                  <ThemedText type="caption" style={{ color: accent }}>
+                    {Localization.comments.editSave}
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </View>
           ) : (
-            <ThemedText type="body">{comment.content}</ThemedText>
+            <ThemedText type="body">{comment.content ?? ''}</ThemedText>
           )}
 
+          {/* Action row — only for non-deleted, non-editing comments */}
+          {!comment.isDeleted && !isEditing ? (
+            <View style={styles.actionRow}>
+              {/* Helpful vote */}
+              <Pressable
+                onPress={handleVote}
+                style={styles.actionButton}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={`${comment.helpfulCount} ${Localization.comments.helpful}`}
+              >
+                <IconSymbol
+                  name={comment.hasVoted ? 'hand.thumbsup.fill' : 'hand.thumbsup'}
+                  size={16}
+                  color={comment.hasVoted ? accent : textSecondary}
+                />
+                {comment.helpfulCount > 0 ? (
+                  <ThemedText
+                    type="caption"
+                    style={{ color: comment.hasVoted ? accent : textSecondary }}
+                  >
+                    {comment.helpfulCount}
+                  </ThemedText>
+                ) : null}
+              </Pressable>
+
+              {/* Reply */}
+              <Pressable
+                onPress={handleReply}
+                style={styles.actionButton}
+                hitSlop={8}
+                accessibilityRole="button"
+                accessibilityLabel={Localization.comments.replyAction}
+              >
+                <IconSymbol name="arrowshape.turn.up.left" size={16} color={textSecondary} />
+                <ThemedText type="caption" style={{ color: textSecondary }}>
+                  {Localization.comments.replyAction}
+                </ThemedText>
+              </Pressable>
+
+              {/* Edit (own only) */}
+              {isOwn ? (
+                <Pressable
+                  onPress={handleEdit}
+                  style={styles.actionButton}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={Localization.actions.edit}
+                >
+                  <IconSymbol name="pencil" size={16} color={textSecondary} />
+                </Pressable>
+              ) : null}
+
+              {/* Delete (own only) */}
+              {isOwn ? (
+                <Pressable
+                  onPress={handleDelete}
+                  style={styles.actionButton}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={Localization.actions.delete}
+                >
+                  <IconSymbol name="trash" size={16} color={textSecondary} />
+                </Pressable>
+              ) : null}
+            </View>
+          ) : null}
+
+          {/* Reply count (top-level comments only) */}
           {comment.replyCount > 0 && !comment.parentCommentId ? (
             <View style={styles.replyCount}>
               <IconSymbol name="text.bubble.fill" size={14} color={textSecondary} />
@@ -78,6 +260,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   replyIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
     paddingLeft: Spacing.lg,
     marginBottom: Spacing.xs,
   },
@@ -98,15 +283,51 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
+    flexWrap: 'wrap',
   },
   name: {
     fontSize: 14,
     lineHeight: 18,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.lg,
+    marginTop: Spacing.xs,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    minHeight: 32,
+    minWidth: 44,
   },
   replyCount: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.xs,
     marginTop: Spacing.xs,
+  },
+  editContainer: {
+    gap: Spacing.sm,
+  },
+  editInput: {
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    borderCurve: 'continuous',
+    padding: Spacing.sm,
+    fontSize: 16,
+    lineHeight: 24,
+    maxHeight: 120,
+    textAlignVertical: 'top',
+  },
+  editActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.md,
+  },
+  editActionButton: {
+    minHeight: 44,
+    justifyContent: 'center',
   },
 });
