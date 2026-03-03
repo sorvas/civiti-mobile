@@ -16,8 +16,8 @@ const OTHER_AVATAR = 40;
 
 // Podium accent colors — one-off decorative values not in the design system
 const GOLD = BrandColors.orangeWeb;
-const SILVER = '#C0C0C0'; // one-off podium color
-const BRONZE = '#CD7F32'; // one-off podium color
+const SILVER = 'rgba(192, 192, 192, 1)'; // one-off podium color
+const BRONZE = 'rgba(205, 127, 50, 1)'; // one-off podium color
 
 type PodiumConfig = { height: number; color: string; avatar: number };
 
