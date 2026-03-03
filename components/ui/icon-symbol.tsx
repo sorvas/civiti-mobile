@@ -66,6 +66,11 @@ const MAPPING = {
   'rectangle.portrait.and.arrow.right': 'logout',
   'star.fill': 'star',
   'trophy.fill': 'emoji-events',
+  // Comments
+  'arrowshape.turn.up.left': 'reply',
+  'trash': 'delete',
+  'hand.thumbsup': 'thumb-up',
+  'hand.thumbsup.fill': 'thumb-up',
   // Misc
   'exclamationmark.triangle.fill': 'warning',
   'arrow.clockwise': 'refresh',

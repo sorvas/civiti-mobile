@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Alert,
   AppState,
+  KeyboardAvoidingView,
   Linking,
   Platform,
   Pressable,
@@ -15,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AuthorityCard } from '@/components/authority-card';
+import { CommentInputBar } from '@/components/comment-input-bar';
 import { CommentItem } from '@/components/comment-item';
 import { EmailPrompt } from '@/components/email-prompt';
 import { ErrorState } from '@/components/error-state';
@@ -32,21 +34,25 @@ import { IssueStatus } from '@/constants/enums';
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
 import { BrandColors } from '@/constants/theme';
-import { useComments } from '@/hooks/use-comments';
+import { useComments, useUpdateComment } from '@/hooks/use-comments';
 import { useEmailTracking } from '@/hooks/use-email-tracking';
 import { useIssueDetail } from '@/hooks/use-issue-detail';
 import { useProfile } from '@/hooks/use-profile';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/store/auth-context';
+import type { CommentResponse } from '@/types/comments';
 import type { IssueAuthorityResponse, IssueDetailResponse } from '@/types/issues';
 import { buildMailto } from '@/utils/build-mailto';
 import { formatTimeAgo } from '@/utils/format-time-ago';
 
 const NOOP = () => {};
+const BOTTOM_BAR_HEIGHT = 140;
 
 function isValidIssueStatus(s: string): s is (typeof IssueStatus)[keyof typeof IssueStatus] {
   return (Object.values(IssueStatus) as string[]).includes(s);
 }
+
+type SortMode = 'newest' | 'mostHelpful';
 
 // ─── Sub-components ─────────────────────────────────────────────
 
@@ -152,7 +158,7 @@ function SectionBlock({
 }) {
   return (
     <View style={styles.section}>
-      <ThemedText type="h2">{title}</ThemedText>
+      <ThemedText type="h2" accessibilityRole="header">{title}</ThemedText>
       {children}
     </View>
   );
@@ -180,35 +186,56 @@ function AuthoritiesSection({
   );
 }
 
-function CommentsSection({ issueId }: { issueId: string }) {
-  const [sortNewest, setSortNewest] = useState(true);
+function CommentsSection({
+  issueId,
+  currentUserId,
+  onReply,
+  editingCommentId,
+  editText,
+  onEditTextChange,
+  onEditSave,
+  onEditCancel,
+  onStartEdit,
+}: {
+  issueId: string;
+  currentUserId: string | undefined;
+  onReply: (comment: CommentResponse) => void;
+  editingCommentId: string | null;
+  editText: string;
+  onEditTextChange: (text: string) => void;
+  onEditSave: () => void;
+  onEditCancel: () => void;
+  onStartEdit: (comment: CommentResponse) => void;
+}) {
+  const [sortMode, setSortMode] = useState<SortMode>('newest');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const accent = useThemeColor({}, 'accent');
+
+  const sortParams = sortMode === 'newest'
+    ? { sortBy: 'createdAt' as const, sortDescending: true }
+    : { sortBy: 'helpfulCount' as const, sortDescending: true };
 
   const {
     comments, totalComments, hasNextPage, fetchNextPage,
     isFetchingNextPage, isLoading, isError, error: commentsError, refetch,
-  } = useComments(issueId, {
-    sortBy: 'createdAt',
-    sortDescending: sortNewest,
-  });
+  } = useComments(issueId, sortParams);
 
   const toggleSort = useCallback(() => {
-    setSortNewest((prev) => !prev);
+    setSortMode((prev) => (prev === 'newest' ? 'mostHelpful' : 'newest'));
   }, []);
 
   const handleLoadMore = useCallback(() => {
-    fetchNextPage();
-  }, [fetchNextPage]);
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <SectionBlock title={`${Localization.comments.title} (${totalComments})`}>
       {totalComments > 0 ? (
-        <Pressable onPress={toggleSort} style={styles.sortToggle} accessibilityRole="button">
+        <Pressable onPress={toggleSort} style={styles.sortToggle} hitSlop={8} accessibilityRole="button">
           <ThemedText type="caption" style={{ color: accent }}>
-            {sortNewest
+            {sortMode === 'newest'
               ? Localization.comments.sortNewest
-              : Localization.comments.sortOldest}
+              : Localization.comments.sortMostHelpful}
           </ThemedText>
         </Pressable>
       ) : null}
@@ -223,14 +250,33 @@ function CommentsSection({ issueId }: { issueId: string }) {
         </ThemedText>
       ) : (
         <>
-          {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
-          ))}
+          {comments.map((comment) => {
+            const parentComment = comment.parentCommentId
+              ? comments.find((c) => c.id === comment.parentCommentId)
+              : null;
+            return (
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                issueId={issueId}
+                currentUserId={currentUserId}
+                parentAuthorName={parentComment?.user.displayName ?? null}
+                onReply={onReply}
+                onStartEdit={onStartEdit}
+                isEditing={editingCommentId === comment.id}
+                editText={editingCommentId === comment.id ? editText : ''}
+                onEditTextChange={onEditTextChange}
+                onEditSave={onEditSave}
+                onEditCancel={onEditCancel}
+              />
+            );
+          })}
           {hasNextPage ? (
             <Pressable
               onPress={handleLoadMore}
               disabled={isFetchingNextPage}
               style={styles.loadMore}
+              hitSlop={8}
               accessibilityRole="button"
             >
               {isFetchingNextPage ? (
@@ -254,12 +300,16 @@ function StickyBottomBar({
   voteCount,
   onEmailCta,
   emailDisabled,
+  replyingTo,
+  onClearReply,
 }: {
   issueId: string;
   hasVoted: boolean;
   voteCount: number;
   onEmailCta: () => void;
   emailDisabled: boolean;
+  replyingTo: CommentResponse | null;
+  onClearReply: () => void;
 }) {
   const insets = useSafeAreaInsets();
   const surface = useThemeColor({}, 'surface');
@@ -276,13 +326,23 @@ function StickyBottomBar({
         },
       ]}
     >
-      <VoteButton issueId={issueId} hasVoted={hasVoted} voteCount={voteCount} />
-      <Button
-        title={Localization.detail.sendEmail}
-        variant="primary"
-        onPress={onEmailCta}
-        disabled={emailDisabled}
-        style={styles.ctaButton}
+      {/* Top row: vote + email CTA */}
+      <View style={styles.bottomBarTopRow}>
+        <VoteButton issueId={issueId} hasVoted={hasVoted} voteCount={voteCount} />
+        <Button
+          title={Localization.detail.sendEmail}
+          variant="primary"
+          onPress={onEmailCta}
+          disabled={emailDisabled}
+          style={styles.ctaButton}
+        />
+      </View>
+
+      {/* Bottom row: comment input */}
+      <CommentInputBar
+        issueId={issueId}
+        replyingTo={replyingTo}
+        onClearReply={onClearReply}
       />
     </View>
   );
@@ -316,10 +376,54 @@ export default function IssueDetailScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const authoritiesYRef = useRef(0);
 
-  const { requireAuth } = useAuth();
+  const { requireAuth, user } = useAuth();
   const { data: issue, isLoading, isError, error, refetch } = useIssueDetail(id);
   const { data: profile } = useProfile();
   const { mutate: trackEmailSent } = useEmailTracking(id);
+  const { mutate: updateCommentFn, isPending: isEditSaving } = useUpdateComment(id);
+
+  // Reply/edit state
+  const [replyingTo, setReplyingTo] = useState<CommentResponse | null>(null);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editText, setEditText] = useState('');
+
+  const handleReply = useCallback((comment: CommentResponse) => {
+    setEditingCommentId(null);
+    setEditText('');
+    setReplyingTo(comment);
+  }, []);
+
+  const handleClearReply = useCallback(() => {
+    setReplyingTo(null);
+  }, []);
+
+  const handleStartEdit = useCallback((comment: CommentResponse) => {
+    setReplyingTo(null);
+    setEditingCommentId(comment.id);
+    setEditText(comment.content ?? '');
+  }, []);
+
+  const handleEditTextChange = useCallback((text: string) => {
+    setEditText(text);
+  }, []);
+
+  const handleEditSave = useCallback(() => {
+    if (!editingCommentId || !editText.trim() || isEditSaving) return;
+    updateCommentFn(
+      { commentId: editingCommentId, data: { content: editText.trim() } },
+      {
+        onSuccess: () => {
+          setEditingCommentId(null);
+          setEditText('');
+        },
+      },
+    );
+  }, [editingCommentId, editText, isEditSaving, updateCommentFn]);
+
+  const handleEditCancel = useCallback(() => {
+    setEditingCommentId(null);
+    setEditText('');
+  }, []);
 
   // Email flow state
   const emailPromptRef = useRef<BottomSheetMethods>(null);
@@ -449,11 +553,16 @@ export default function IssueDetailScreen() {
   const hasAuthorityWithEmail = authorities.some((a) => a.email);
 
   return (
-    <View style={[styles.container, { backgroundColor: background }]}>
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView
         ref={scrollViewRef}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
       >
         {/* Photo Gallery */}
         <PhotoGallery photos={photos} />
@@ -508,19 +617,31 @@ export default function IssueDetailScreen() {
         ) : null}
 
         {/* Comments */}
-        <CommentsSection issueId={issue.id} />
+        <CommentsSection
+          issueId={issue.id}
+          currentUserId={user?.id}
+          onReply={handleReply}
+          editingCommentId={editingCommentId}
+          editText={editText}
+          onEditTextChange={handleEditTextChange}
+          onEditSave={handleEditSave}
+          onEditCancel={handleEditCancel}
+          onStartEdit={handleStartEdit}
+        />
 
         {/* Bottom spacer for sticky bar */}
         <View style={styles.bottomSpacer} />
       </ScrollView>
 
-      {/* Sticky Bottom Bar */}
+      {/* Sticky Bottom Bar — combined vote/email + comment input */}
       <StickyBottomBar
         issueId={issue.id}
         hasVoted={hasVoted}
         voteCount={issue.communityVotes}
         onEmailCta={handleEmailCta}
         emailDisabled={!hasAuthorityWithEmail}
+        replyingTo={replyingTo}
+        onClearReply={handleClearReply}
       />
 
       {/* Email Confirmation Prompt */}
@@ -529,7 +650,7 @@ export default function IssueDetailScreen() {
         onConfirm={handleEmailConfirm}
         onDismiss={handleEmailDismiss}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -610,18 +731,22 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'column',
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
     borderTopWidth: 1,
+    gap: Spacing.sm,
+  },
+  bottomBarTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.md,
   },
   ctaButton: {
     flex: 1,
   },
   bottomSpacer: {
-    height: 80,
+    height: BOTTOM_BAR_HEIGHT,
   },
   backButtonError: {
     width: 44,
