@@ -71,6 +71,8 @@ const MAPPING = {
   'trash': 'delete',
   'hand.thumbsup': 'thumb-up',
   'hand.thumbsup.fill': 'thumb-up',
+  // Activity
+  'bell.fill': 'notifications',
   // Misc
   'exclamationmark.triangle.fill': 'warning',
   'arrow.clockwise': 'refresh',

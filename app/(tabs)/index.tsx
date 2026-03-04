@@ -35,6 +35,7 @@ const VIEW_SEGMENTS: { value: ViewMode; label: string; icon: 'list.bullet' | 'ma
 
 type ListHeaderProps = {
   onFilterPress: () => void;
+  onActivityPress: () => void;
   activeFilterCount: number;
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
@@ -42,6 +43,7 @@ type ListHeaderProps = {
 
 function ListHeader({
   onFilterPress,
+  onActivityPress,
   activeFilterCount,
   viewMode,
   onViewModeChange,
@@ -50,7 +52,7 @@ function ListHeader({
 
   return (
     <View style={styles.header}>
-      <ThemedText type="h1">{Localization.tabs.issues}</ThemedText>
+      <ThemedText type="h1" accessibilityRole="header">{Localization.tabs.issues}</ThemedText>
       <View style={styles.headerActions}>
         <View style={styles.segmentedControlWrapper}>
           <SegmentedControl
@@ -59,6 +61,14 @@ function ListHeader({
             onValueChange={onViewModeChange}
           />
         </View>
+        <Pressable
+          onPress={onActivityPress}
+          hitSlop={12}
+          accessibilityRole="button"
+          accessibilityLabel={Localization.activity.title}
+        >
+          <IconSymbol name="bell.fill" size={24} color={iconColor} />
+        </Pressable>
         <Pressable
           onPress={onFilterPress}
           hitSlop={12}
@@ -128,6 +138,10 @@ export default function IssuesScreen() {
     filterSheetRef.current?.expand();
   }, []);
 
+  const handleActivityPress = useCallback(() => {
+    router.push('/activity');
+  }, [router]);
+
   const handlePress = useCallback(
     (id: string) => {
       router.push({ pathname: '/issues/[id]', params: { id } });
@@ -151,7 +165,7 @@ export default function IssuesScreen() {
   );
 
   const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+    if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // ─── Content branching ──────────────────────────────────────
@@ -159,6 +173,7 @@ export default function IssuesScreen() {
   const header = (
     <ListHeader
       onFilterPress={handleFilterPress}
+      onActivityPress={handleActivityPress}
       activeFilterCount={activeFilterCount}
       viewMode={viewMode}
       onViewModeChange={setViewMode}

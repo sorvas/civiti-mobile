@@ -52,6 +52,7 @@ export default function RootLayout() {
             <Stack>
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="issues/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="activity" options={{ headerShown: false }} />
               <Stack.Screen name="badges" options={{ headerShown: false }} />
               <Stack.Screen name="achievements" options={{ headerShown: false }} />
               <Stack.Screen name="leaderboard" options={{ headerShown: false }} />

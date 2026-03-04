@@ -174,6 +174,12 @@ export const Localization = {
     editCancel: 'Anulează',
   },
 
+  // Activity feed
+  activity: {
+    title: 'Activitate recentă',
+    empty: 'Nicio activitate recentă',
+  },
+
   // Email campaign
   email: {
     promptTitle: 'Ai trimis emailul?',
