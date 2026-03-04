@@ -100,7 +100,6 @@ export default function CreateStep5() {
           console.warn('[review] Failed to remove draft after submit:', err);
         });
         router.replace('/create/success');
-        setTimeout(() => wizard.reset(), 0);
       },
       onError: (error) => {
         if (error instanceof ApiError) {

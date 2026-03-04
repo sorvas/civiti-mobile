@@ -42,7 +42,7 @@ export function isValidDraft(raw: unknown): raw is WizardDraft {
     (d.latitude === null || typeof d.latitude === 'number') &&
     (d.longitude === null || typeof d.longitude === 'number') &&
     (d.district === null || typeof d.district === 'string') &&
-    Array.isArray(d.photoUrls) &&
+    Array.isArray(d.photoUrls) && d.photoUrls.every((url) => typeof url === 'string') &&
     Array.isArray(d.authorities) &&
     typeof d.lastCompletedStep === 'number' &&
     Number.isFinite(d.lastCompletedStep) &&
