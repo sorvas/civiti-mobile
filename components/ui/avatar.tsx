@@ -13,13 +13,14 @@ type AvatarProps = {
 };
 
 function getInitials(name: string): string {
-  return name
+  const result = name
     .split(' ')
     .filter((part) => part.length > 0)
     .slice(0, 2)
     .map((part) => part[0])
     .join('')
     .toUpperCase();
+  return result || '?';
 }
 
 export function Avatar({ uri, name, size = 40 }: AvatarProps) {

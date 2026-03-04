@@ -195,6 +195,7 @@ export function useNotifications(): NotificationBadgeValue {
             },
           },
         ],
+        { cancelable: false },
       );
     };
 
@@ -212,6 +213,7 @@ export function useNotifications(): NotificationBadgeValue {
       void AsyncStorage.removeItem(PUSH_PERMISSION_ASKED_KEY).catch((err: unknown) => {
         console.warn('[notifications] Failed to clear permission-asked flag on sign-out:', err);
       });
+      promptingRef.current = false;
       setBadgeCount(0);
     }
     prevSessionRef.current = session;
