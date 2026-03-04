@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { PUSH_TOKEN_KEY } from '@/constants/storage-keys';
+import { PUSH_TOKEN_KEY, PUSH_TOKEN_REGISTERED_KEY } from '@/constants/storage-keys';
 
 let androidChannelReady = false;
 
@@ -59,15 +59,35 @@ export async function getAndStorePushToken(): Promise<string | null> {
 }
 
 // TODO: Call apiClient POST /user/push-token when the backend adds this endpoint
+// When implemented, call `markTokenRegistered()` on success so the caller
+// knows not to retry on subsequent sign-ins.
 export async function registerPushTokenWithBackend(token: string): Promise<void> {
   if (__DEV__) {
     console.log('[notifications] Backend token registration not yet implemented. Token:', token);
+  }
+  // Do NOT call markTokenRegistered() here — stub didn't actually register.
+}
+
+export async function markTokenRegistered(): Promise<void> {
+  try {
+    await AsyncStorage.setItem(PUSH_TOKEN_REGISTERED_KEY, 'true');
+  } catch (error) {
+    console.warn('[notifications] Failed to persist token-registered flag:', error);
+  }
+}
+
+export async function isTokenRegistered(): Promise<boolean> {
+  try {
+    return (await AsyncStorage.getItem(PUSH_TOKEN_REGISTERED_KEY)) === 'true';
+  } catch (error) {
+    console.warn('[notifications] Failed to read token-registered flag:', error);
+    return false;
   }
 }
 
 export async function clearStoredPushToken(): Promise<void> {
   try {
-    await AsyncStorage.removeItem(PUSH_TOKEN_KEY);
+    await AsyncStorage.multiRemove([PUSH_TOKEN_KEY, PUSH_TOKEN_REGISTERED_KEY]);
   } catch (error) {
     console.warn('[notifications] Failed to clear push token — stale token may persist:', error);
   }

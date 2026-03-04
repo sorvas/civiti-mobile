@@ -17,6 +17,7 @@ import {
   clearStoredPushToken,
   getAndStorePushToken,
   getStoredPushToken,
+  isTokenRegistered,
   registerPushTokenWithBackend,
   requestNotificationPermission,
 } from '@/services/notifications';
@@ -37,7 +38,7 @@ Notifications.setNotificationHandler({
 function isValidNotificationRoute(data: unknown): data is NotificationRoute {
   if (!data || typeof data !== 'object') return false;
   const d = data as Record<string, unknown>;
-  if (d.screen === 'issue' && typeof d.issueId === 'string' && d.issueId.length > 0) return true;
+  if (d.screen === 'issue' && typeof d.issueId === 'string' && d.issueId.trim().length > 0) return true;
   if (d.screen === 'achievements' || d.screen === 'badges') return true;
   return false;
 }
@@ -106,7 +107,10 @@ export function useNotifications(): NotificationBadgeValue {
   const sessionRef = useRef(session);
   useEffect(() => { sessionRef.current = session; }, [session]);
 
-  const clearBadge = useCallback(() => setBadgeCount(0), []);
+  const clearBadge = useCallback(() => {
+    setBadgeCount(0);
+    void Notifications.setBadgeCountAsync(0);
+  }, []);
 
   // Sign-in: request permission + register token
   useEffect(() => {
@@ -115,9 +119,17 @@ export function useNotifications(): NotificationBadgeValue {
     let cancelled = false;
 
     const setup = async () => {
-      // Skip if we already have a stored token
+      // If token exists locally, just ensure backend registration
       const existing = await getStoredPushToken();
-      if (existing || cancelled) return;
+      if (cancelled) return;
+      if (existing) {
+        if (!(await isTokenRegistered())) {
+          void registerPushTokenWithBackend(existing).catch((err: unknown) => {
+            console.warn('[notifications] Backend registration retry failed:', err);
+          });
+        }
+        return;
+      }
 
       // Skip if user already dismissed the prompt
       const asked = await AsyncStorage.getItem(PUSH_PERMISSION_ASKED_KEY).catch(
@@ -236,7 +248,11 @@ export function useNotifications(): NotificationBadgeValue {
   useEffect(() => {
     const sub = Notifications.addNotificationReceivedListener(() => {
       if (sessionRef.current) {
-        setBadgeCount((prev) => prev + 1);
+        setBadgeCount((prev) => {
+          const next = prev + 1;
+          void Notifications.setBadgeCountAsync(next);
+          return next;
+        });
       }
     });
     return () => sub.remove();
