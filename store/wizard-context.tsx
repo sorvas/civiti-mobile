@@ -32,13 +32,21 @@ export function isValidDraft(raw: unknown): raw is WizardDraft {
   if (raw == null || typeof raw !== 'object') return false;
   const d = raw as Record<string, unknown>;
   return (
+    (d.category === null || typeof d.category === 'string') &&
     typeof d.title === 'string' &&
     typeof d.description === 'string' &&
+    typeof d.urgency === 'string' &&
+    typeof d.desiredOutcome === 'string' &&
+    typeof d.communityImpact === 'string' &&
     typeof d.address === 'string' &&
+    (d.latitude === null || typeof d.latitude === 'number') &&
+    (d.longitude === null || typeof d.longitude === 'number') &&
+    (d.district === null || typeof d.district === 'string') &&
     Array.isArray(d.photoUrls) &&
     Array.isArray(d.authorities) &&
     typeof d.lastCompletedStep === 'number' &&
-    Number.isFinite(d.lastCompletedStep)
+    Number.isFinite(d.lastCompletedStep) &&
+    typeof d.savedAt === 'string'
   );
 }
 
