@@ -85,9 +85,9 @@ export default function OnboardingScreen() {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPending, setIsPending] = useState(false);
   const flatListRef = useRef<FlatList<Slide>>(null);
   const activeIndexRef = useRef(0);
+  const isPendingRef = useRef(false);
 
   const isLastSlide = activeIndex === SLIDES.length - 1;
 
@@ -122,13 +122,13 @@ export default function OnboardingScreen() {
   );
 
   const handleComplete = useCallback(() => {
-    if (isPending) return;
-    setIsPending(true);
+    if (isPendingRef.current) return;
+    isPendingRef.current = true;
     AsyncStorage.setItem(ONBOARDING_KEY, 'true').catch((err) =>
       console.warn('[onboarding] Failed to save flag:', err),
     );
     router.replace('/');
-  }, [isPending]);
+  }, []);
 
   return (
     <View style={styles.container}>
