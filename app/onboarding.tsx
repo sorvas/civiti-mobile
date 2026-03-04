@@ -87,6 +87,7 @@ export default function OnboardingScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPending, setIsPending] = useState(false);
   const flatListRef = useRef<FlatList<Slide>>(null);
+  const activeIndexRef = useRef(0);
 
   const isLastSlide = activeIndex === SLIDES.length - 1;
 
@@ -98,12 +99,13 @@ export default function OnboardingScreen() {
 
   // Re-anchor scroll position on rotation
   useEffect(() => {
-    flatListRef.current?.scrollToIndex({ index: activeIndex, animated: false });
-  }, [width, activeIndex]);
+    flatListRef.current?.scrollToIndex({ index: activeIndexRef.current, animated: false });
+  }, [width]);
 
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken<Slide>[] }) => {
       if (viewableItems.length > 0 && viewableItems[0].index != null) {
+        activeIndexRef.current = viewableItems[0].index;
         setActiveIndex(viewableItems[0].index);
       }
     },
