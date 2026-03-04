@@ -180,14 +180,14 @@ export function useNotifications(): NotificationBadgeValue {
                   void registerPushTokenWithBackend(token).catch((err: unknown) => {
                     console.warn('[notifications] Backend registration failed:', err);
                   });
+                  // Only mark as asked after token is persisted locally
+                  void AsyncStorage.setItem(
+                    PUSH_PERMISSION_ASKED_KEY,
+                    'true',
+                  ).catch((err: unknown) => {
+                    console.warn('[notifications] Failed to persist permission-asked flag:', err);
+                  });
                 }
-                // Only mark as asked on success
-                void AsyncStorage.setItem(
-                  PUSH_PERMISSION_ASKED_KEY,
-                  'true',
-                ).catch((err: unknown) => {
-                  console.warn('[notifications] Failed to persist permission-asked flag:', err);
-                });
               } catch (error) {
                 console.warn('[notifications] Setup failed:', error);
                 Alert.alert(

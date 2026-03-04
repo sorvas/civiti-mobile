@@ -16,7 +16,7 @@ export default function TabLayout() {
   const { session, loading } = useAuth();
   const { badgeCount, clearBadge } = useNotificationBadge();
 
-  const guardedTabPress = (e: TabPressEvent) => {
+  const guardedTabPress = (e: TabPressEvent, onAuthed?: () => void) => {
     if (loading) {
       e.preventDefault();
       return;
@@ -24,7 +24,9 @@ export default function TabLayout() {
     if (!session) {
       e.preventDefault();
       router.push('/login');
+      return;
     }
+    onAuthed?.();
   };
 
   return (
@@ -70,20 +72,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} />,
           tabBarBadge: badgeCount > 0 ? (badgeCount > 99 ? '99+' : badgeCount) : undefined,
         }}
-        listeners={{
-          tabPress: (e: TabPressEvent) => {
-            if (loading) {
-              e.preventDefault();
-              return;
-            }
-            if (!session) {
-              e.preventDefault();
-              router.push('/login');
-              return;
-            }
-            clearBadge();
-          },
-        }}
+        listeners={{ tabPress: (e: TabPressEvent) => guardedTabPress(e, clearBadge) }}
       />
     </Tabs>
   );

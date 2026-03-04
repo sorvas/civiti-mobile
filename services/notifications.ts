@@ -52,7 +52,7 @@ export async function getAndStorePushToken(): Promise<string | null> {
     await AsyncStorage.setItem(PUSH_TOKEN_KEY, token);
   } catch (error) {
     console.warn('[notifications] Failed to persist push token:', error);
-    // Still return the token so the caller can register it with the backend
+    return null; // Caller must not set permission-asked flag without a persisted token
   }
 
   return token;
