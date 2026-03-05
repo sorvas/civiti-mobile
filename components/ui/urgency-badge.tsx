@@ -20,7 +20,7 @@ export function UrgencyBadge({ level }: UrgencyBadgeProps) {
   return (
     <View style={[styles.badge, { backgroundColor: resolvedColors.bg }]}>
       <ThemedText type="badge" style={{ color: resolvedColors.fg }}>
-        {Localization.urgency[level]}
+        {Localization.urgency[level] ?? Localization.urgency.Low}
       </ThemedText>
     </View>
   );
