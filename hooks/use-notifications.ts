@@ -250,7 +250,7 @@ export function useNotifications(): NotificationBadgeValue {
       if (sessionRef.current) {
         setBadgeCount((prev) => {
           const next = prev + 1;
-          void Notifications.setBadgeCountAsync(next);
+          void Notifications.setBadgeCountAsync(Math.min(next, 99));
           return next;
         });
       }

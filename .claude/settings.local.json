@@ -17,7 +17,15 @@
       "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && git add services/auth.ts store/auth-context.tsx app/_layout.tsx constants/api.ts services/api-client.ts docs/implementation-plan.md package.json package-lock.json app.json)",
       "mcp__obsidian-mcp-tools__fetch",
       "Bash(python3 -c \":*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && npx tsc --noEmit 2>&1 | head -50)",
+      "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && git checkout master && git pull origin master)",
+      "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && git fetch origin && git pull origin master)",
+      "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && npx expo customize tsconfig.json 2>&1 | head -5; npx expo export --dump-sourcemap --platform web 2>/dev/null; echo \"---\"; ls -la .expo/types/ 2>/dev/null)",
+      "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && npx tsc --noEmit 2>&1 && echo \"✓ tsc clean\")",
+      "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && npx expo lint 2>&1 | grep -E \"\\(error|warning|✖\\)\")",
+      "Bash(cd \"/mnt/g/Repos Personal/Civiti-Mobile\" && npx expo lint 2>&1 | tail -20)",
+      "Bash(\"/c/Program Files/dotnet/dotnet\":*)"
     ]
   }
 }
