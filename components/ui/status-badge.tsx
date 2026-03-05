@@ -16,7 +16,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   const colors = StatusBadgeColors[scheme][status];
 
   if (!colors) {
-    if (__DEV__) console.warn(`[StatusBadge] Unknown status "${status}"`);
+    console.warn(`[StatusBadge] Unknown status "${status}"`);
     const fallback = StatusBadgeColors[scheme].Draft;
     return (
       <View style={[styles.badge, { backgroundColor: fallback.bg, borderColor: fallback.border }]}>
