@@ -223,7 +223,7 @@ export function useNotifications(): NotificationBadgeValue {
               } catch (error) {
                 console.warn('[notifications] Setup failed:', error);
                 Alert.alert(
-                  Localization.notifications.permissionDeniedTitle,
+                  Localization.notifications.registrationFailedTitle,
                   Localization.notifications.registrationFailed,
                 );
                 // Do NOT set PUSH_PERMISSION_ASKED_KEY — allow retry on next login

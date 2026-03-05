@@ -541,6 +541,7 @@ export const Localization = {
     permissionDeny: 'Nu acum',
     permissionDeniedTitle: 'Notificări dezactivate',
     permissionDeniedMessage: 'Poți activa notificările oricând din Setări.',
+    registrationFailedTitle: 'Eroare la notificări',
     registrationFailed: 'Înregistrarea pentru notificări a eșuat.',
   },
 
