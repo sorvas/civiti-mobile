@@ -2,6 +2,7 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { BorderRadius, Spacing } from '@/constants/spacing';
+import { BrandColors } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 type ChipOption = {
@@ -19,7 +20,6 @@ export function ChipSelector({ options, selectedValues, onSelectionChange }: Chi
   const borderColor = useThemeColor({}, 'border');
   const surfaceColor = useThemeColor({}, 'surface');
   const accent = useThemeColor({}, 'accent');
-  const primaryColor = useThemeColor({}, 'primary');
 
   const toggleValue = (value: string) => {
     const isSelected = selectedValues.includes(value);
@@ -54,7 +54,7 @@ export function ChipSelector({ options, selectedValues, onSelectionChange }: Chi
           >
             <ThemedText
               type="caption"
-              style={isSelected ? { color: primaryColor } : undefined}
+              style={isSelected ? { color: BrandColors.oxfordBlue } : undefined}
             >
               {option.label}
             </ThemedText>

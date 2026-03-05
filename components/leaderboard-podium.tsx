@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
     borderCurve: 'continuous',
   },
   pedestalRank: {
-    color: '#FFFFFF',
+    color: BrandColors.oxfordBlue,
   },
 });
