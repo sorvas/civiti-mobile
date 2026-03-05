@@ -196,10 +196,13 @@ export function useNotifications(): NotificationBadgeValue {
                 }
                 const token = await getAndStorePushToken();
                 if (token) {
-                  void registerPushTokenWithBackend(token).catch((err: unknown) => {
+                  try {
+                    await registerPushTokenWithBackend(token);
+                  } catch (err) {
                     console.warn('[notifications] Backend registration failed:', err);
-                  });
-                  // Only mark as asked after token is persisted locally
+                    // Don't set asked flag — allow retry on next sign-in
+                    return;
+                  }
                   void AsyncStorage.setItem(
                     PUSH_PERMISSION_ASKED_KEY,
                     'true',
@@ -269,6 +272,7 @@ export function useNotifications(): NotificationBadgeValue {
         const id = response.notification.request.identifier;
         if (handledIds.has(id)) return;
         handledIds.add(id);
+        if (!sessionRef.current) return;
         const route = parseNotificationRoute(
           response.notification.request.content,
         );
@@ -289,6 +293,7 @@ export function useNotifications(): NotificationBadgeValue {
             const id = response.notification.request.identifier;
             if (!handledIds.has(id)) {
               handledIds.add(id);
+              if (!sessionRef.current) return;
               const route = parseNotificationRoute(
                 response.notification.request.content,
               );

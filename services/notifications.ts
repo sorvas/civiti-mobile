@@ -58,14 +58,16 @@ export async function getAndStorePushToken(): Promise<string | null> {
   return token;
 }
 
-// TODO: Call apiClient POST /user/push-token when the backend adds this endpoint
-// When implemented, call `markTokenRegistered()` on success so the caller
-// knows not to retry on subsequent sign-ins.
+// TODO: Replace this stub with: apiClient.post('/user/push-token', { token })
+// then call markTokenRegistered() on success.
 export async function registerPushTokenWithBackend(token: string): Promise<void> {
   if (__DEV__) {
     console.log('[notifications] Backend token registration not yet implemented. Token:', token);
   }
-  // Do NOT call markTokenRegistered() here — stub didn't actually register.
+
+  // ── Replace everything above this line with the real API call ──
+  // await apiClient.post('/user/push-token', { token });
+  // await markTokenRegistered();
 }
 
 export async function markTokenRegistered(): Promise<void> {
