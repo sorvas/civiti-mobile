@@ -102,20 +102,18 @@ export const StatusBadgeColors: Record<'light' | 'dark', Record<IssueStatus, Bad
   },
 };
 
-type UrgencyStyle = { fg: string; bg: string };
-
-export const UrgencyBadgeColors: Record<'light' | 'dark', Record<UrgencyLevel, UrgencyStyle>> = {
+export const UrgencyBadgeColors: Record<'light' | 'dark', Record<UrgencyLevel, BadgeStyle>> = {
   light: {
-    Low:    { fg: '#28A745', bg: '#DCFCE7' },
-    Medium: { fg: '#F59E0B', bg: '#FEF3C7' },
-    High:   { fg: '#F97316', bg: '#FFEDD5' },
-    Urgent: { fg: '#DC3545', bg: '#FFF1F0' },
+    Low:    { fg: '#28A745', bg: '#DCFCE7', border: '#DCFCE7' },
+    Medium: { fg: '#F59E0B', bg: '#FEF3C7', border: '#FEF3C7' },
+    High:   { fg: '#F97316', bg: '#FFEDD5', border: '#FFEDD5' },
+    Urgent: { fg: '#DC3545', bg: '#FFF1F0', border: '#FFF1F0' },
   },
   dark: {
-    Low:    { fg: '#4ADE80', bg: '#14532D' },
-    Medium: { fg: '#FBBF24', bg: 'rgba(245,158,11,0.15)' },
-    High:   { fg: '#FB923C', bg: 'rgba(249,115,22,0.15)' },
-    Urgent: { fg: '#F87171', bg: '#450A0A' },
+    Low:    { fg: '#4ADE80', bg: '#14532D', border: 'rgba(74,222,128,0.3)' },
+    Medium: { fg: '#FBBF24', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' },
+    High:   { fg: '#FB923C', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.3)' },
+    Urgent: { fg: '#F87171', bg: '#450A0A', border: 'rgba(248,113,113,0.3)' },
   },
 };
 

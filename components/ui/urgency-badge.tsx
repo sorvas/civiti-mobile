@@ -18,7 +18,7 @@ export function UrgencyBadge({ level }: UrgencyBadgeProps) {
   const resolvedColors = colors ?? UrgencyBadgeColors[scheme].Low;
 
   return (
-    <View style={[styles.badge, { backgroundColor: resolvedColors.bg }]}>
+    <View style={[styles.badge, { backgroundColor: resolvedColors.bg, borderColor: resolvedColors.border }]}>
       <ThemedText type="badge" style={{ color: resolvedColors.fg }}>
         {Localization.urgency[level as UrgencyLevel] ?? Localization.urgency.Low}
       </ThemedText>
@@ -32,6 +32,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.sm,
     borderRadius: BorderRadius.xs,
     borderCurve: 'continuous',
+    borderWidth: 1,
     alignSelf: 'flex-start',
   },
 });

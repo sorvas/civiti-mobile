@@ -38,7 +38,7 @@ function PhotoItem({
   const handlePress = useCallback(() => onPress(item.id), [onPress, item.id]);
 
   return (
-    <Pressable onPress={handlePress} accessibilityRole="button" accessibilityLabel={item.description ?? Localization.detail.photoAlt}>
+    <Pressable onPress={handlePress} accessibilityRole="button" accessibilityLabel={item.description || Localization.detail.photoAlt}>
       <Image
         source={{ uri: item.url }}
         style={[styles.photo, { width }]}
@@ -46,7 +46,7 @@ function PhotoItem({
         transition={200}
         recyclingKey={item.id}
         accessibilityRole="image"
-        accessibilityLabel={item.description ?? Localization.detail.photoAlt}
+        accessibilityLabel={item.description || Localization.detail.photoAlt}
       />
     </Pressable>
   );
