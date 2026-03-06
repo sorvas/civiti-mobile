@@ -19,6 +19,7 @@ export function AuthorityCard({ authority, onSendEmail }: AuthorityCardProps) {
   const border = useThemeColor({}, 'border');
   const textSecondary = useThemeColor({}, 'textSecondary');
   const accent = useThemeColor({}, 'accent');
+  const primaryText = BrandColors.oxfordBlue;
 
   const handleEmailPress = useCallback(() => {
     onSendEmail(authority);
@@ -70,12 +71,12 @@ export function AuthorityCard({ authority, onSendEmail }: AuthorityCardProps) {
         <IconSymbol
           name="envelope.fill"
           size={16}
-          color={authority.email ? BrandColors.oxfordBlue : textSecondary}
+          color={authority.email ? primaryText : textSecondary}
         />
         <ThemedText
           type="label"
           style={{
-            color: authority.email ? BrandColors.oxfordBlue : textSecondary,
+            color: authority.email ? primaryText : textSecondary,
             textTransform: 'none',
           }}
         >

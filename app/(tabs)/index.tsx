@@ -18,6 +18,7 @@ import { Spacing } from '@/constants/spacing';
 import { BrandColors, Fonts } from '@/constants/theme';
 import { useIssues } from '@/hooks/use-issues';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { NetworkError } from '@/services/errors';
 import type { IssueFilters, IssueListResponse } from '@/types/issues';
 
 export { ErrorBoundary };
@@ -119,6 +120,7 @@ export default function IssuesScreen() {
     isFetchingNextPage,
     isLoading,
     isError,
+    error,
     isRefetching,
     refetch,
   } = useIssues(filters);
@@ -189,7 +191,10 @@ export default function IssuesScreen() {
       <IssueCardSkeleton />
     </>
   ) : isError ? (
-    <ErrorState onRetry={refetch} />
+    <ErrorState
+      message={error instanceof NetworkError ? Localization.errors.noConnection : undefined}
+      onRetry={refetch}
+    />
   ) : issues.length === 0 ? (
     <EmptyState message={Localization.states.emptyIssues} />
   ) : null;
@@ -215,6 +220,8 @@ export default function IssuesScreen() {
             ListFooterComponent={renderFooter}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
+            maxToRenderPerBatch={10}
+            windowSize={5}
             refreshControl={
               <RefreshControl refreshing={isRefetching} onRefresh={refetch} tintColor={accent} />
             }
@@ -257,6 +264,7 @@ const styles = StyleSheet.create({
     right: -6,
     backgroundColor: BrandColors.orangeWeb,
     borderRadius: 9,
+    borderCurve: 'continuous',
     minWidth: 18,
     height: 18,
     alignItems: 'center',

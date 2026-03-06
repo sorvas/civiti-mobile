@@ -33,7 +33,6 @@ import { UrgencyBadge } from '@/components/ui/urgency-badge';
 import { IssueStatus } from '@/constants/enums';
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
-import { BrandColors } from '@/constants/theme';
 import { useComments, useUpdateComment } from '@/hooks/use-comments';
 import { useEmailTracking } from '@/hooks/use-email-tracking';
 import { useIssueDetail } from '@/hooks/use-issue-detail';
@@ -68,7 +67,7 @@ function DetailHeader({ onBack, onShare }: { onBack: () => void; onShare: () => 
         accessibilityRole="button"
         accessibilityLabel={Localization.actions.back}
       >
-        <IconSymbol name="chevron.left" size={24} color={BrandColors.white} />
+        <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
       </Pressable>
       <Pressable
         onPress={onShare}
@@ -77,7 +76,7 @@ function DetailHeader({ onBack, onShare }: { onBack: () => void; onShare: () => 
         accessibilityRole="button"
         accessibilityLabel={Localization.detail.share}
       >
-        <IconSymbol name="square.and.arrow.up" size={24} color={BrandColors.white} />
+        <IconSymbol name="square.and.arrow.up" size={24} color="#FFFFFF" />
       </Pressable>
     </View>
   );
@@ -118,8 +117,8 @@ function StatisticsRow({ issue }: { issue: IssueDetailResponse }) {
   const accent = useThemeColor({}, 'accent');
 
   const stats = [
-    { label: Localization.detail.emailsSent, value: issue.emailsSent, color: accent },
-    { label: Localization.detail.votes, value: issue.communityVotes, color: accent },
+    { label: Localization.detail.emailsSent, value: Number.isFinite(issue.emailsSent) ? issue.emailsSent : '—', color: accent },
+    { label: Localization.detail.votes, value: Number.isFinite(issue.communityVotes) ? issue.communityVotes : '—', color: accent },
     {
       label: Localization.detail.authoritiesCount,
       value: issue.authorities?.length ?? 0,
@@ -415,6 +414,10 @@ export default function IssueDetailScreen() {
         onSuccess: () => {
           setEditingCommentId(null);
           setEditText('');
+        },
+        onError: (err) => {
+          console.warn('[comments] Failed to update comment', editingCommentId, err);
+          Alert.alert(Localization.errors.generic);
         },
       },
     );

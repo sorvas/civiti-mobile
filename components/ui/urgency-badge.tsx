@@ -4,25 +4,23 @@ import { ThemedText } from '@/components/themed-text';
 import type { UrgencyLevel } from '@/constants/enums';
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
+import { UrgencyBadgeColors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type UrgencyBadgeProps = {
-  level: UrgencyLevel;
-};
-
-const URGENCY_STYLES: Record<UrgencyLevel, { fg: string; bg: string }> = {
-  Low:    { fg: '#28A745', bg: '#DCFCE7' },
-  Medium: { fg: '#F59E0B', bg: '#FEF3C7' },
-  High:   { fg: '#F97316', bg: '#FFEDD5' },
-  Urgent: { fg: '#DC3545', bg: '#FFF1F0' },
+  level: UrgencyLevel | (string & {});
 };
 
 export function UrgencyBadge({ level }: UrgencyBadgeProps) {
-  const colors = URGENCY_STYLES[level] ?? URGENCY_STYLES.Low;
+  const scheme = (useColorScheme() ?? 'light') as 'light' | 'dark';
+  const colors = UrgencyBadgeColors[scheme][level as UrgencyLevel];
+  if (!colors) console.warn(`[UrgencyBadge] Unknown level "${level}", falling back to Low`);
+  const resolvedColors = colors ?? UrgencyBadgeColors[scheme].Low;
 
   return (
-    <View style={[styles.badge, { backgroundColor: colors.bg }]}>
-      <ThemedText type="badge" style={{ color: colors.fg }}>
-        {Localization.urgency[level]}
+    <View style={[styles.badge, { backgroundColor: resolvedColors.bg, borderColor: resolvedColors.border }]}>
+      <ThemedText type="badge" style={{ color: resolvedColors.fg }}>
+        {Localization.urgency[level as UrgencyLevel] ?? Localization.urgency.Low}
       </ThemedText>
     </View>
   );
@@ -33,6 +31,8 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xxs,
     paddingHorizontal: Spacing.sm,
     borderRadius: BorderRadius.xs,
+    borderCurve: 'continuous',
+    borderWidth: 1,
     alignSelf: 'flex-start',
   },
 });

@@ -42,12 +42,13 @@ Visual conventions for Civiti-Mobile. Matches civiti.ro web brand. All values in
 | `surface` | `#FFFFFF` | `#1E2022` |
 | `surfaceElevated` | `#FFFFFF` | `#262A2C` |
 | `border` | `#E5E5E5` | `#3A3F42` |
+| `pressed` | `#D6D6D6` | `#4A5057` |
 | `tint` (active tab) | `#FCA311` | `#FCA311` |
 | `tabIconDefault` | `oxfordBlue50` | `rgba(236,237,238, 0.5)` |
 | `primary` | `#14213D` | `#E5E5E5` |
 | `accent` | `#FCA311` | `#FCA311` |
 
-### Issue Status Colors
+### Issue Status Colors (Light)
 
 | Status | Foreground | Background | Border |
 |---|---|---|---|
@@ -57,6 +58,17 @@ Visual conventions for Civiti-Mobile. Matches civiti.ro web brand. All values in
 | Active | `#1890FF` | `#E6F7FF` | `#91D5FF` |
 | Resolved | `#28A745` | `#DCFCE7` | `#86EFAC` |
 | Rejected | `#DC3545` | `#FFF1F0` | `#FFB8B8` |
+
+### Issue Status Colors (Dark)
+
+| Status | Foreground | Background | Border |
+|---|---|---|---|
+| Draft / Cancelled | `#94A3B8` | `rgba(100,116,139,0.15)` | `rgba(100,116,139,0.3)` |
+| Submitted | `#93C5FD` | `#1E2D3D` | `rgba(147,197,253,0.3)` |
+| UnderReview | `#FBBF24` | `rgba(245,158,11,0.15)` | `rgba(245,158,11,0.3)` |
+| Active | `#60A5FA` | `#1A3A47` | `rgba(96,165,250,0.3)` |
+| Resolved | `#4ADE80` | `#14532D` | `rgba(74,222,128,0.3)` |
+| Rejected | `#F87171` | `#450A0A` | `rgba(248,113,113,0.3)` |
 
 ### Category Colors
 
@@ -69,7 +81,7 @@ Visual conventions for Civiti-Mobile. Matches civiti.ro web brand. All values in
 | Safety | `#EF4444` | `shield.fill` | `shield` |
 | Other | `#6B7280` | `ellipsis.circle.fill` | `more-horiz` |
 
-### Urgency Colors
+### Urgency Colors (Light)
 
 | Level | Color | Background |
 |---|---|---|
@@ -77,6 +89,15 @@ Visual conventions for Civiti-Mobile. Matches civiti.ro web brand. All values in
 | Medium | `#F59E0B` | `#FEF3C7` |
 | High | `#F97316` | `#FFEDD5` |
 | Urgent | `#DC3545` | `#FFF1F0` |
+
+### Urgency Colors (Dark)
+
+| Level | Color | Background |
+|---|---|---|
+| Low | `#4ADE80` | `#14532D` |
+| Medium | `#FBBF24` | `rgba(245,158,11,0.15)` |
+| High | `#FB923C` | `rgba(249,115,22,0.15)` |
+| Urgent | `#F87171` | `#450A0A` |
 
 ## Typography
 

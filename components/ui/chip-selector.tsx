@@ -1,8 +1,8 @@
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { BrandColors } from '@/constants/theme';
 import { BorderRadius, Spacing } from '@/constants/spacing';
+import { BrandColors } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 type ChipOption = {
@@ -19,6 +19,7 @@ type ChipSelectorProps = {
 export function ChipSelector({ options, selectedValues, onSelectionChange }: ChipSelectorProps) {
   const borderColor = useThemeColor({}, 'border');
   const surfaceColor = useThemeColor({}, 'surface');
+  const accent = useThemeColor({}, 'accent');
 
   const toggleValue = (value: string) => {
     const isSelected = selectedValues.includes(value);
@@ -43,17 +44,17 @@ export function ChipSelector({ options, selectedValues, onSelectionChange }: Chi
             style={[
               styles.chip,
               isSelected
-                ? styles.chipSelected
+                ? { backgroundColor: accent, borderColor: accent }
                 : { backgroundColor: surfaceColor, borderColor },
             ]}
-            onPress={() => toggleValue(option.value)}
+            onPress={() => { toggleValue(option.value); }}
             accessibilityRole="button"
             accessibilityLabel={option.label}
             accessibilityState={{ selected: isSelected }}
           >
             <ThemedText
               type="caption"
-              style={isSelected ? styles.chipTextSelected : undefined}
+              style={isSelected ? { color: BrandColors.oxfordBlue } : undefined}
             >
               {option.label}
             </ThemedText>
@@ -73,13 +74,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
     borderRadius: BorderRadius.full,
+    borderCurve: 'continuous',
     borderWidth: 1,
-  },
-  chipSelected: {
-    backgroundColor: BrandColors.orangeWeb,
-    borderColor: BrandColors.orangeWeb,
-  },
-  chipTextSelected: {
-    color: BrandColors.oxfordBlue,
   },
 });

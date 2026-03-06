@@ -4,23 +4,28 @@ import { ThemedText } from '@/components/themed-text';
 import type { IssueStatus } from '@/constants/enums';
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
+import { StatusBadgeColors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 type StatusBadgeProps = {
-  status: IssueStatus;
-};
-
-const STATUS_STYLES: Record<IssueStatus, { fg: string; bg: string; border: string }> = {
-  Draft:       { fg: '#64748B', bg: '#F1F5F9', border: '#CBD5E1' },
-  Submitted:   { fg: '#14213D', bg: '#E6F7FF', border: '#91D5FF' },
-  UnderReview: { fg: '#D48806', bg: '#FFFBE6', border: '#FFE58F' },
-  Active:      { fg: '#1890FF', bg: '#E6F7FF', border: '#91D5FF' },
-  Resolved:    { fg: '#28A745', bg: '#DCFCE7', border: '#86EFAC' },
-  Rejected:    { fg: '#DC3545', bg: '#FFF1F0', border: '#FFB8B8' },
-  Cancelled:   { fg: '#64748B', bg: '#F1F5F9', border: '#CBD5E1' },
+  status: IssueStatus | (string & {});
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const colors = STATUS_STYLES[status];
+  const scheme = (useColorScheme() ?? 'light') as 'light' | 'dark';
+  const colors = StatusBadgeColors[scheme][status as IssueStatus];
+
+  if (!colors) {
+    console.warn(`[StatusBadge] Unknown status "${status}"`);
+    const fallback = StatusBadgeColors[scheme].Draft;
+    return (
+      <View style={[styles.badge, { backgroundColor: fallback.bg, borderColor: fallback.border }]}>
+        <ThemedText type="badge" style={{ color: fallback.fg }}>
+          {Localization.status[status as keyof typeof Localization.status] ?? status}
+        </ThemedText>
+      </View>
+    );
+  }
 
   return (
     <View
@@ -30,7 +35,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
       ]}
     >
       <ThemedText type="badge" style={{ color: colors.fg }}>
-        {Localization.status[status]}
+        {Localization.status[status as IssueStatus] ?? status}
       </ThemedText>
     </View>
   );
@@ -41,6 +46,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.xxs,
     paddingHorizontal: Spacing.sm,
     borderRadius: BorderRadius.xs,
+    borderCurve: 'continuous',
     borderWidth: 1,
     alignSelf: 'flex-start',
   },

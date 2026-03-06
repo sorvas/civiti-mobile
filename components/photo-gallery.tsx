@@ -11,7 +11,6 @@ import {
 
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
-import { BrandColors } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import type { IssuePhotoResponse } from '@/types/issues';
 
@@ -39,15 +38,14 @@ function PhotoItem({
   const handlePress = useCallback(() => onPress(item.id), [onPress, item.id]);
 
   return (
-    <Pressable onPress={handlePress}>
+    <Pressable onPress={handlePress} accessibilityRole="button" accessibilityLabel={item.description || Localization.detail.photoAlt}>
       <Image
         source={{ uri: item.url }}
         style={[styles.photo, { width }]}
         contentFit="cover"
         transition={200}
         recyclingKey={item.id}
-        accessibilityRole="image"
-        accessibilityLabel={item.description ?? Localization.detail.photoAlt}
+        accessible={false}
       />
     </Pressable>
   );
@@ -76,7 +74,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
 
   const handlePhotoPress = useCallback((id: string) => {
     // TODO(S09): Fullscreen photo viewer
-    console.log('[S09] Fullscreen photo viewer:', id);
+    if (__DEV__) console.log('[S09] Fullscreen photo viewer:', id);
   }, []);
 
   const getItemLayout = useCallback(
@@ -119,7 +117,7 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
                 {
                   backgroundColor:
                     index === activeIndex
-                      ? BrandColors.white
+                      ? '#FFFFFF'
                       : 'rgba(255,255,255,0.5)',
                 },
               ]}
@@ -155,5 +153,6 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: BorderRadius.xs,
+    borderCurve: 'continuous',
   },
 });

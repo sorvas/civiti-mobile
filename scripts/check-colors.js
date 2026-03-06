@@ -19,8 +19,14 @@ const APPROVED_COLORS = new Set([
   '#28A745', '#DCFCE7', '#DC3545', '#FFF1F0', '#1890FF', '#E6F7FF',
   // Semantic (dark)
   '#4ADE80', '#14532D', '#F87171', '#450A0A', '#60A5FA', '#1A3A47',
+  // Status/Urgency dark variants
+  '#94A3B8', '#FBBF24', '#FB923C', '#93C5FD', '#1E2D3D',
+  // Button dark danger pressed
+  '#D46060',
   // Dark mode
-  '#ECEDEE', '#151718', '#1E2022', '#262A2C', '#3A3F42',
+  '#ECEDEE', '#151718', '#1E2022', '#262A2C', '#3A3F42', '#4A5057',
+  // Light pressed
+  '#D6D6D6',
   // Status — Draft/Cancelled
   '#64748B', '#F1F5F9', '#CBD5E1',
   // Status — Submitted

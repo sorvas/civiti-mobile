@@ -2,8 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { BrandColors } from '@/constants/theme';
 import { BorderRadius, Spacing } from '@/constants/spacing';
+import { BrandColors } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
 type CheckboxProps = {
@@ -14,6 +14,7 @@ type CheckboxProps = {
 
 export function Checkbox({ checked, onToggle, label }: CheckboxProps) {
   const borderColor = useThemeColor({}, 'border');
+  const accent = useThemeColor({}, 'accent');
 
   return (
     <Pressable
@@ -28,12 +29,12 @@ export function Checkbox({ checked, onToggle, label }: CheckboxProps) {
         style={[
           styles.box,
           checked
-            ? styles.boxChecked
+            ? { backgroundColor: accent, borderColor: accent }
             : { borderColor },
         ]}
       >
         {checked && (
-          <IconSymbol name="checkmark" size={16} color={BrandColors.white} />
+          <IconSymbol name="checkmark" size={16} color={BrandColors.oxfordBlue} />
         )}
       </View>
       {label ? <ThemedText type="body" style={styles.label}>{label}</ThemedText> : null}
@@ -57,10 +58,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  boxChecked: {
-    backgroundColor: BrandColors.orangeWeb,
-    borderColor: BrandColors.orangeWeb,
   },
   label: {
     flex: 1,

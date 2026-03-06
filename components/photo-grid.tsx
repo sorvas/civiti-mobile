@@ -16,10 +16,12 @@ type PhotoGridProps = {
 
 function PhotoGridItem({
   url,
+  index,
   size,
   onRemove,
 }: {
   url: string;
+  index: number;
   size: number;
   onRemove: () => void;
 }) {
@@ -33,13 +35,14 @@ function PhotoGridItem({
         contentFit="cover"
         transition={200}
         recyclingKey={url}
+        accessibilityLabel={`${Localization.detail.photoAlt} ${index + 1}`}
       />
       <Pressable
         onPress={onRemove}
         style={styles.deleteButton}
         hitSlop={HIT_SLOP}
         accessibilityRole="button"
-        accessibilityLabel={Localization.wizard.deletePhoto}
+        accessibilityLabel={`${Localization.wizard.deletePhoto} ${index + 1}`}
       >
         <IconSymbol
           name="xmark.circle.fill"
@@ -59,10 +62,11 @@ export function PhotoGrid({ urls, onRemove }: PhotoGridProps) {
 
   return (
     <View style={styles.grid}>
-      {urls.map((url) => (
+      {urls.map((url, index) => (
         <PhotoGridItem
           key={url}
           url={url}
+          index={index}
           size={itemSize}
           onRemove={() => onRemove(url)}
         />
@@ -92,6 +96,7 @@ const styles = StyleSheet.create({
     right: Spacing.xs,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: BorderRadius.full,
+    borderCurve: 'continuous',
     width: 28,
     height: 28,
     alignItems: 'center',

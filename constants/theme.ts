@@ -28,6 +28,7 @@ export const Colors = {
     surface: '#FFFFFF',
     surfaceElevated: '#FFFFFF',
     border: '#E5E5E5',
+    pressed: '#D6D6D6',
     tint: '#FCA311',
     tabIconDefault: 'rgba(20, 33, 61, 0.5)',
     tabIconSelected: '#FCA311',
@@ -49,6 +50,7 @@ export const Colors = {
     surface: '#1E2022',
     surfaceElevated: '#262A2C',
     border: '#3A3F42',
+    pressed: '#4A5057',
     tint: '#FCA311',
     tabIconDefault: 'rgba(236, 237, 238, 0.5)',
     tabIconSelected: '#FCA311',
@@ -75,6 +77,44 @@ export const StatusColors: Record<IssueStatus, string> = {
   Resolved: '#28A745',
   Rejected: '#DC3545',
   Cancelled: '#64748B',
+};
+
+type BadgeStyle = { fg: string; bg: string; border: string };
+
+export const StatusBadgeColors: Record<'light' | 'dark', Record<IssueStatus, BadgeStyle>> = {
+  light: {
+    Draft:       { fg: '#64748B', bg: '#F1F5F9', border: '#CBD5E1' },
+    Submitted:   { fg: '#14213D', bg: '#E6F7FF', border: '#91D5FF' },
+    UnderReview: { fg: '#D48806', bg: '#FFFBE6', border: '#FFE58F' },
+    Active:      { fg: '#1890FF', bg: '#E6F7FF', border: '#91D5FF' },
+    Resolved:    { fg: '#28A745', bg: '#DCFCE7', border: '#86EFAC' },
+    Rejected:    { fg: '#DC3545', bg: '#FFF1F0', border: '#FFB8B8' },
+    Cancelled:   { fg: '#64748B', bg: '#F1F5F9', border: '#CBD5E1' },
+  },
+  dark: {
+    Draft:       { fg: '#94A3B8', bg: 'rgba(100,116,139,0.15)', border: 'rgba(100,116,139,0.3)' },
+    Submitted:   { fg: '#93C5FD', bg: '#1E2D3D', border: 'rgba(147,197,253,0.3)' },
+    UnderReview: { fg: '#FBBF24', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' },
+    Active:      { fg: '#60A5FA', bg: '#1A3A47', border: 'rgba(96,165,250,0.3)' },
+    Resolved:    { fg: '#4ADE80', bg: '#14532D', border: 'rgba(74,222,128,0.3)' },
+    Rejected:    { fg: '#F87171', bg: '#450A0A', border: 'rgba(248,113,113,0.3)' },
+    Cancelled:   { fg: '#94A3B8', bg: 'rgba(100,116,139,0.15)', border: 'rgba(100,116,139,0.3)' },
+  },
+};
+
+export const UrgencyBadgeColors: Record<'light' | 'dark', Record<UrgencyLevel, BadgeStyle>> = {
+  light: {
+    Low:    { fg: '#28A745', bg: '#DCFCE7', border: 'transparent' },
+    Medium: { fg: '#F59E0B', bg: '#FEF3C7', border: 'transparent' },
+    High:   { fg: '#F97316', bg: '#FFEDD5', border: 'transparent' },
+    Urgent: { fg: '#DC3545', bg: '#FFF1F0', border: 'transparent' },
+  },
+  dark: {
+    Low:    { fg: '#4ADE80', bg: '#14532D', border: 'rgba(74,222,128,0.3)' },
+    Medium: { fg: '#FBBF24', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' },
+    High:   { fg: '#FB923C', bg: 'rgba(249,115,22,0.15)', border: 'rgba(249,115,22,0.3)' },
+    Urgent: { fg: '#F87171', bg: '#450A0A', border: 'rgba(248,113,113,0.3)' },
+  },
 };
 
 export const CategoryColors: Record<IssueCategory, string> = {
