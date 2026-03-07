@@ -7,7 +7,7 @@ import { IssueMiniCard } from '@/components/issue-mini-card';
 import { ThemedText } from '@/components/themed-text';
 import { Localization } from '@/constants/localization';
 import { Spacing } from '@/constants/spacing';
-import { BrandColors, CategoryColors, Fonts } from '@/constants/theme';
+import { BrandColors, CategoryColors } from '@/constants/theme';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import type { IssueListResponse } from '@/types/issues';
 
@@ -69,7 +69,6 @@ export function IssueMapView({ issues, onIssuePress }: IssueMapViewProps) {
         onClusterPress={handleMapPress}
         clusterColor={BrandColors.orangeWeb}
         clusterTextColor={BrandColors.oxfordBlue}
-        clusterFontFamily={Fonts.bold}
         minPoints={2}
         radius={50}
         animationEnabled={false}
