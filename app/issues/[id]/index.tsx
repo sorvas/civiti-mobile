@@ -298,31 +298,39 @@ function CommentsSection({
                     onEditSave={onEditSave}
                     onEditCancel={onEditCancel}
                     repliesExpanded={isExpanded}
-                    replyCountOverride={replies.length}
+                    replyCountOverride={replies.length || comment.replyCount}
                     onToggleReplies={
-                      replies.length > 0
+                      replies.length > 0 || comment.replyCount > 0
                         ? () => toggleThread(comment.id)
                         : undefined
                     }
                   />
                   {isExpanded
-                    ? replies.map((reply) => (
-                        <CommentItem
-                          key={reply.id}
-                          comment={reply}
-                          issueId={issueId}
-                          currentUserId={currentUserId}
-                          parentAuthorName={comment.user.displayName ?? null}
-                          onReply={onReply}
-                          onStartEdit={onStartEdit}
-                          isEditing={editingCommentId === reply.id}
-                          editText={editingCommentId === reply.id ? editText : ''}
-                          onEditTextChange={onEditTextChange}
-                          onEditSave={onEditSave}
-                          onEditCancel={onEditCancel}
-                          isReply
-                        />
-                      ))
+                    ? replies.length > 0
+                      ? replies.map((reply) => (
+                          <CommentItem
+                            key={reply.id}
+                            comment={reply}
+                            issueId={issueId}
+                            currentUserId={currentUserId}
+                            parentAuthorName={comment.user.displayName ?? null}
+                            onReply={onReply}
+                            onStartEdit={onStartEdit}
+                            isEditing={editingCommentId === reply.id}
+                            editText={editingCommentId === reply.id ? editText : ''}
+                            onEditTextChange={onEditTextChange}
+                            onEditSave={onEditSave}
+                            onEditCancel={onEditCancel}
+                            isReply
+                          />
+                        ))
+                      : hasNextPage
+                        ? (
+                          <ThemedText type="caption" style={{ color: textSecondary, marginLeft: Spacing['2xl'] }}>
+                            {Localization.comments.loadMore}
+                          </ThemedText>
+                        )
+                        : null
                     : null}
                 </View>
               );
