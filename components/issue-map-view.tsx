@@ -51,6 +51,13 @@ export function IssueMapView({ issues, onIssuePress }: IssueMapViewProps) {
     setSelectedIssue(null);
   }, []);
 
+  const handleClusterPress = useCallback(
+    (_cluster: unknown, _markers?: unknown[]) => {
+      setSelectedIssue(null);
+    },
+    [],
+  );
+
   const handleMiniCardPress = useCallback(() => {
     if (selectedIssue) onIssuePress(selectedIssue.id);
   }, [selectedIssue, onIssuePress]);
@@ -66,7 +73,7 @@ export function IssueMapView({ issues, onIssuePress }: IssueMapViewProps) {
         provider={PROVIDER_DEFAULT}
         initialRegion={INITIAL_REGION}
         onPress={handleMapPress}
-        onClusterPress={handleMapPress}
+        onClusterPress={handleClusterPress}
         clusterColor={BrandColors.orangeWeb}
         clusterTextColor={BrandColors.oxfordBlue}
         minPoints={2}

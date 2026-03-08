@@ -241,13 +241,23 @@ function CommentsSection({
     );
     const items = [...topLevel, ...orphans];
     const itemIds = new Set(items.map((c) => c.id));
+    // Build parent lookup so we can walk grandchildren up to their thread root
+    const parentMap = new Map<string, string>();
+    for (const c of comments) {
+      if (c.parentCommentId) parentMap.set(c.id, c.parentCommentId);
+    }
     const repliesByParent = new Map<string, CommentResponse[]>();
     for (const c of comments) {
-      if (c.parentCommentId && itemIds.has(c.parentCommentId)) {
-        const list = repliesByParent.get(c.parentCommentId) ?? [];
-        list.push(c);
-        repliesByParent.set(c.parentCommentId, list);
+      if (!c.parentCommentId) continue;
+      // Walk up to find the nearest ancestor that is a top-level item
+      let rootId = c.parentCommentId;
+      while (!itemIds.has(rootId) && parentMap.has(rootId)) {
+        rootId = parentMap.get(rootId)!;
       }
+      if (!itemIds.has(rootId)) continue;
+      const list = repliesByParent.get(rootId) ?? [];
+      list.push(c);
+      repliesByParent.set(rootId, list);
     }
     return { items, repliesByParent };
   }, [comments]);
@@ -292,7 +302,7 @@ function CommentsSection({
                   onEditSave={onEditSave}
                   onEditCancel={onEditCancel}
                   repliesExpanded={isExpanded}
-                  replyCountOverride={replies.length || comment.replyCount}
+                  replyCountOverride={comment.replyCount}
                   onToggleReplies={
                     replies.length > 0 || comment.replyCount > 0
                       ? onToggleThread
