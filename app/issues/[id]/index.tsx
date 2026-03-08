@@ -323,7 +323,9 @@ function CommentsSection({
                           type="caption"
                           style={{ color: textSecondary, marginLeft: Spacing['2xl'] }}
                         >
-                          {Localization.comments.repliesUnavailable}
+                          {hasNextPage
+                            ? Localization.comments.repliesMayLoadWithMore
+                            : Localization.comments.repliesUnavailable}
                         </ThemedText>
                       )
                   : null}
@@ -464,6 +466,8 @@ export default function IssueDetailScreen() {
 
   const handleSortChange = useCallback(() => {
     setExpandedThreads(new Set());
+    setEditingCommentId(null);
+    setEditText('');
   }, []);
 
   const handleReplySuccess = useCallback((parentCommentId: string) => {

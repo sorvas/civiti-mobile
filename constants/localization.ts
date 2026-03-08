@@ -176,6 +176,7 @@ export const Localization = {
     editSave: 'Salvează',
     editCancel: 'Anulează',
     repliesUnavailable: 'Răspunsurile nu sunt disponibile momentan',
+    repliesMayLoadWithMore: 'Răspunsurile pot apărea la încărcare suplimentară',
   },
 
   // Activity feed
