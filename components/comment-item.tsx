@@ -214,19 +214,21 @@ export function CommentItem({
                 ) : null}
               </Pressable>
 
-              {/* Reply */}
-              <Pressable
-                onPress={handleReply}
-                style={styles.actionButton}
-                hitSlop={8}
-                accessibilityRole="button"
-                accessibilityLabel={Localization.comments.replyAction}
-              >
-                <IconSymbol name="arrowshape.turn.up.left" size={16} color={textSecondary} />
-                <ThemedText type="caption" style={{ color: textSecondary }}>
-                  {Localization.comments.replyAction}
-                </ThemedText>
-              </Pressable>
+              {/* Reply (top-level only — nested replies aren't rendered) */}
+              {!isReply ? (
+                <Pressable
+                  onPress={handleReply}
+                  style={styles.actionButton}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={Localization.comments.replyAction}
+                >
+                  <IconSymbol name="arrowshape.turn.up.left" size={16} color={textSecondary} />
+                  <ThemedText type="caption" style={{ color: textSecondary }}>
+                    {Localization.comments.replyAction}
+                  </ThemedText>
+                </Pressable>
+              ) : null}
 
               {/* Edit (own only) */}
               {isOwn ? (

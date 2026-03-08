@@ -43,7 +43,8 @@ export function CommentInputBar({ issueId, replyingTo, onClearReply, onReplySucc
         {
           onSuccess: () => {
             setText('');
-            if (replyingTo?.id) onReplySuccess?.(replyingTo.id);
+            const threadId = replyingTo?.parentCommentId ?? replyingTo?.id;
+            if (threadId) onReplySuccess?.(threadId);
             onClearReply();
           },
         },
