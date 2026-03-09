@@ -320,9 +320,7 @@ function CommentsSection({
                           issueId={issueId}
                           currentUserId={currentUserId}
                           parentAuthorName={
-                            (reply.parentCommentId
-                              ? threaded.commentById.get(reply.parentCommentId)?.user.displayName
-                              : comment.user.displayName) ?? null
+                            threaded.commentById.get(reply.parentCommentId!)?.user.displayName ?? null
                           }
                           onReply={onReply}
                           onStartEdit={onStartEdit}
