@@ -297,7 +297,7 @@ function CommentsSection({
       repliesByParent.set(rootId, list);
     }
     const commentById = new Map(visible.map((c) => [c.id, c]));
-    return { items, repliesByParent, commentById, visibleCount: visible.filter((c) => !c.isHidden).length };
+    return { items, repliesByParent, commentById, visibleCount: visible.length };
   }, [comments, isBlockedUser]);
 
   return (
