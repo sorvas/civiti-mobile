@@ -195,6 +195,17 @@ export function CommentItem({
                   <IconSymbol name="flag.fill" size={16} color={textSecondary} />
                 </Pressable>
               ) : null}
+              {!isOwn && onBlockUser ? (
+                <Pressable
+                  onPress={handleBlockUser}
+                  style={styles.actionButton}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={Localization.blockedUsers.blockAction}
+                >
+                  <IconSymbol name="nosign" size={16} color={textSecondary} />
+                </Pressable>
+              ) : null}
             </View>
           ) : isEditing ? (
             <View style={styles.editContainer}>

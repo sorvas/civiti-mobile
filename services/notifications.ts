@@ -77,6 +77,15 @@ export async function deregisterPushToken(token: string): Promise<void> {
     method: 'POST',
     body: { token },
   });
+  await clearTokenRegisteredFlag();
+}
+
+async function clearTokenRegisteredFlag(): Promise<void> {
+  try {
+    await AsyncStorage.removeItem(PUSH_TOKEN_REGISTERED_KEY);
+  } catch (error) {
+    console.warn('[notifications] Failed to clear token-registered flag:', error);
+  }
 }
 
 export async function markTokenRegistered(): Promise<void> {

@@ -74,7 +74,7 @@ export const ReportSheet = forwardRef<ReportSheetRef, ReportSheetProps>(
     );
 
     return (
-      <ThemedBottomSheet ref={sheetRef} snapPoints={['65%']} onChange={handleSheetChange}>
+      <ThemedBottomSheet ref={sheetRef} snapPoints={['65%']} onChange={handleSheetChange} enablePanDownToClose={!isSubmitting}>
         <View style={styles.content}>
           <ThemedText type="h3">{Localization.report.title}</ThemedText>
 
