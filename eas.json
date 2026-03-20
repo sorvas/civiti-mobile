@@ -29,7 +29,7 @@
     "production": {
       "ios": {
         "appleId": "sorvas@icloud.com",
-        "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_APP_ID",
+        "ascAppId": "6760908767",
         "appleTeamId": "BSY36H5S97"
       }
     }
