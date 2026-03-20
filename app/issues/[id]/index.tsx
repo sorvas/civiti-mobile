@@ -498,6 +498,7 @@ export default function IssueDetailScreen() {
   const { mutate: blockUserFn } = useBlockUser();
   const { isBlocked } = useBlockedUsers();
   const reportSheetRef = useRef<ReportSheetRef>(null);
+  const [reportTargetType, setReportTargetType] = useState<'issue' | 'comment' | null>(null);
 
   // Reply/edit state
   const [replyingTo, setReplyingTo] = useState<CommentResponse | null>(null);
@@ -578,11 +579,13 @@ export default function IssueDetailScreen() {
   // Report + block handlers
   const handleReportIssue = useCallback(() => {
     requireAuth(() => {
+      setReportTargetType('issue');
       reportSheetRef.current?.open({ type: 'issue', id });
     });
   }, [requireAuth, id]);
 
   const handleReportComment = useCallback((comment: CommentResponse) => {
+    setReportTargetType('comment');
     reportSheetRef.current?.open({ type: 'comment', id: comment.id });
   }, []);
 
@@ -857,7 +860,7 @@ export default function IssueDetailScreen() {
       <ReportSheet
         ref={reportSheetRef}
         onSubmit={handleReportSubmit}
-        isSubmitting={isReportingIssue || isReportingComment}
+        isSubmitting={reportTargetType === 'issue' ? isReportingIssue : isReportingComment}
       />
     </KeyboardAvoidingView>
   );

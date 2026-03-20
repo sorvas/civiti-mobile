@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -25,7 +25,8 @@ export default function BlockedUsersScreen() {
   const borderColor = useThemeColor({}, 'border');
 
   const { blockedUsers, isLoading, isError, refetch } = useBlockedUsers();
-  const { mutate: unblock, isPending: isUnblocking } = useUnblockUser();
+  const { mutate: unblock } = useUnblockUser();
+  const [unblockingId, setUnblockingId] = useState<string | null>(null);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -33,7 +34,10 @@ export default function BlockedUsersScreen() {
 
   const handleUnblock = useCallback(
     (userId: string) => {
-      unblock(userId);
+      setUnblockingId(userId);
+      unblock(userId, {
+        onSettled: () => setUnblockingId(null),
+      });
     },
     [unblock],
   );
@@ -51,12 +55,13 @@ export default function BlockedUsersScreen() {
           variant="ghost"
           title={Localization.blockedUsers.unblock}
           onPress={() => handleUnblock(item.userId)}
-          disabled={isUnblocking}
+          disabled={unblockingId === item.userId}
+          isLoading={unblockingId === item.userId}
           size="small"
         />
       </View>
     ),
-    [surfaceColor, borderColor, handleUnblock, isUnblocking],
+    [surfaceColor, borderColor, handleUnblock, unblockingId],
   );
 
   const renderEmpty = useCallback(

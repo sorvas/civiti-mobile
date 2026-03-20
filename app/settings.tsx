@@ -214,7 +214,7 @@ export default function SettingsScreen() {
           <View style={[styles.card, { backgroundColor: surfaceColor, borderColor }]}>
             <Pressable
               style={styles.linkRow}
-              onPress={() => Linking.openURL(PRIVACY_POLICY_URL)}
+              onPress={() => Linking.openURL(PRIVACY_POLICY_URL).catch(() => Alert.alert(Localization.errors.generic))}
               hitSlop={4}
               accessibilityRole="link"
             >
@@ -224,7 +224,7 @@ export default function SettingsScreen() {
             <View style={[styles.rowDivider, { backgroundColor: borderColor }]} />
             <Pressable
               style={styles.linkRow}
-              onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}
+              onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL).catch(() => Alert.alert(Localization.errors.generic))}
               hitSlop={4}
               accessibilityRole="link"
             >

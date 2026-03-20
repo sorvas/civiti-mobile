@@ -291,7 +291,7 @@ export default function RegisterScreen() {
                   onToggle={() => setTermsAccepted((prev) => !prev)}
                 />
                 <Pressable
-                  onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}
+                  onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL).catch(() => {})}
                   hitSlop={8}
                   accessibilityRole="link"
                 >
