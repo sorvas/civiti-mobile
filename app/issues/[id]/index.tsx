@@ -22,6 +22,7 @@ import { EmailPrompt } from '@/components/email-prompt';
 import { ErrorState } from '@/components/error-state';
 import { LocationPreview } from '@/components/location-preview';
 import { PhotoGallery } from '@/components/photo-gallery';
+import { ReportSheet, type ReportSheetRef, type ReportTarget } from '@/components/report-sheet';
 import { ThemedText } from '@/components/themed-text';
 import { VoteButton } from '@/components/vote-button';
 import { Button } from '@/components/ui/button';
@@ -33,13 +34,16 @@ import { UrgencyBadge } from '@/components/ui/urgency-badge';
 import { IssueStatus } from '@/constants/enums';
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
+import { useBlockedUsers, useBlockUser } from '@/hooks/use-blocked-users';
 import { useComments, useUpdateComment } from '@/hooks/use-comments';
 import { useEmailTracking } from '@/hooks/use-email-tracking';
 import { useIssueDetail } from '@/hooks/use-issue-detail';
 import { useProfile } from '@/hooks/use-profile';
+import { useReportComment, useReportIssue } from '@/hooks/use-report';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/store/auth-context';
 import type { CommentResponse } from '@/types/comments';
+import type { ReportReason } from '@/types/reports';
 import type { IssueAuthorityResponse, IssueDetailResponse } from '@/types/issues';
 import { buildMailto } from '@/utils/build-mailto';
 import { formatTimeAgo } from '@/utils/format-time-ago';
@@ -54,7 +58,15 @@ type SortMode = 'newest' | 'mostHelpful';
 
 // ─── Sub-components ─────────────────────────────────────────────
 
-function DetailHeader({ onBack, onShare }: { onBack: () => void; onShare: () => void }) {
+function DetailHeader({
+  onBack,
+  onShare,
+  onReport,
+}: {
+  onBack: () => void;
+  onShare: () => void;
+  onReport: () => void;
+}) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -68,15 +80,26 @@ function DetailHeader({ onBack, onShare }: { onBack: () => void; onShare: () => 
       >
         <IconSymbol name="chevron.left" size={24} color="#FFFFFF" />
       </Pressable>
-      <Pressable
-        onPress={onShare}
-        style={styles.headerButton}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel={Localization.detail.share}
-      >
-        <IconSymbol name="square.and.arrow.up" size={24} color="#FFFFFF" />
-      </Pressable>
+      <View style={styles.headerRight}>
+        <Pressable
+          onPress={onReport}
+          style={styles.headerButton}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={Localization.report.title}
+        >
+          <IconSymbol name="flag.fill" size={20} color="#FFFFFF" />
+        </Pressable>
+        <Pressable
+          onPress={onShare}
+          style={styles.headerButton}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={Localization.detail.share}
+        >
+          <IconSymbol name="square.and.arrow.up" size={24} color="#FFFFFF" />
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -197,6 +220,9 @@ function CommentsSection({
   expandedThreads,
   onToggleThread,
   onSortChange,
+  onReport,
+  onBlockUser,
+  isBlockedUser,
 }: {
   issueId: string;
   currentUserId: string | undefined;
@@ -210,6 +236,9 @@ function CommentsSection({
   expandedThreads: Set<string>;
   onToggleThread: (commentId: string) => void;
   onSortChange: () => void;
+  onReport: (comment: CommentResponse) => void;
+  onBlockUser: (comment: CommentResponse) => void;
+  isBlockedUser: (userId: string) => boolean;
 }) {
   const [sortMode, setSortMode] = useState<SortMode>('newest');
   const textSecondary = useThemeColor({}, 'textSecondary');
@@ -234,8 +263,9 @@ function CommentsSection({
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const threaded = useMemo(() => {
-    const commentIds = new Set(comments.map((c) => c.id));
-    const items = comments.filter(
+    const visible = comments.filter((c) => !isBlockedUser(c.user.id));
+    const commentIds = new Set(visible.map((c) => c.id));
+    const items = visible.filter(
       (c) => !c.parentCommentId || !commentIds.has(c.parentCommentId),
     );
     const itemIds = new Set(items.map((c) => c.id));
@@ -245,7 +275,7 @@ function CommentsSection({
       if (c.parentCommentId) parentMap.set(c.id, c.parentCommentId);
     }
     const repliesByParent = new Map<string, CommentResponse[]>();
-    for (const c of comments) {
+    for (const c of visible) {
       if (!c.parentCommentId) continue;
       // Walk up to find the nearest ancestor that is a top-level item
       let rootId = c.parentCommentId;
@@ -260,9 +290,9 @@ function CommentsSection({
       list.push(c);
       repliesByParent.set(rootId, list);
     }
-    const commentById = new Map(comments.map((c) => [c.id, c]));
+    const commentById = new Map(visible.map((c) => [c.id, c]));
     return { items, repliesByParent, commentById };
-  }, [comments]);
+  }, [comments, isBlockedUser]);
 
   return (
     <SectionBlock title={`${Localization.comments.title} (${totalComments})`}>
@@ -310,6 +340,8 @@ function CommentsSection({
                       ? onToggleThread
                       : undefined
                   }
+                  onReport={onReport}
+                  onBlockUser={onBlockUser}
                 />
                 {isExpanded
                   ? replies.length > 0
@@ -330,6 +362,8 @@ function CommentsSection({
                           onEditSave={onEditSave}
                           onEditCancel={onEditCancel}
                           isReply
+                          onReport={onReport}
+                          onBlockUser={onBlockUser}
                         />
                       ))
                     : (
@@ -459,6 +493,11 @@ export default function IssueDetailScreen() {
   const { data: profile } = useProfile();
   const { mutate: trackEmailSent } = useEmailTracking(id);
   const { mutate: updateCommentFn, isPending: isEditSaving } = useUpdateComment(id);
+  const { mutate: reportIssueFn, isPending: isReportingIssue } = useReportIssue();
+  const { mutate: reportCommentFn, isPending: isReportingComment } = useReportComment();
+  const { mutate: blockUserFn } = useBlockUser();
+  const { isBlocked } = useBlockedUsers();
+  const reportSheetRef = useRef<ReportSheetRef>(null);
 
   // Reply/edit state
   const [replyingTo, setReplyingTo] = useState<CommentResponse | null>(null);
@@ -535,6 +574,48 @@ export default function IssueDetailScreen() {
     setEditingCommentId(null);
     setEditText('');
   }, []);
+
+  // Report + block handlers
+  const handleReportIssue = useCallback(() => {
+    requireAuth(() => {
+      reportSheetRef.current?.open({ type: 'issue', id });
+    });
+  }, [requireAuth, id]);
+
+  const handleReportComment = useCallback((comment: CommentResponse) => {
+    reportSheetRef.current?.open({ type: 'comment', id: comment.id });
+  }, []);
+
+  const handleReportSubmit = useCallback(
+    (target: ReportTarget, reason: ReportReason, details: string | null) => {
+      const data = { reason, details };
+      if (target.type === 'issue') {
+        reportIssueFn({ issueId: target.id, data });
+      } else {
+        reportCommentFn({ commentId: target.id, data });
+      }
+    },
+    [reportIssueFn, reportCommentFn],
+  );
+
+  const handleBlockUser = useCallback(
+    (comment: CommentResponse) => {
+      const name = comment.user.displayName ?? '?';
+      Alert.alert(
+        Localization.blockedUsers.blockConfirmTitle,
+        Localization.blockedUsers.blockConfirmMessage(name),
+        [
+          { text: Localization.actions.cancel, style: 'cancel' },
+          {
+            text: Localization.blockedUsers.blockConfirmYes,
+            style: 'destructive',
+            onPress: () => blockUserFn(comment.user.id),
+          },
+        ],
+      );
+    },
+    [blockUserFn],
+  );
 
   // Email flow state
   const emailPromptRef = useRef<BottomSheetMethods>(null);
@@ -636,7 +717,7 @@ export default function IssueDetailScreen() {
   if (isLoading) {
     return (
       <View style={[styles.container, { backgroundColor: background }]}>
-        <DetailHeader onBack={handleBack} onShare={NOOP} />
+        <DetailHeader onBack={handleBack} onShare={NOOP} onReport={NOOP} />
         <DetailSkeleton />
       </View>
     );
@@ -680,7 +761,7 @@ export default function IssueDetailScreen() {
         <PhotoGallery photos={photos} />
 
         {/* Overlay header — positioned over gallery */}
-        <DetailHeader onBack={handleBack} onShare={handleShare} />
+        <DetailHeader onBack={handleBack} onShare={handleShare} onReport={handleReportIssue} />
 
         {/* Title + Badges + Meta */}
         <TitleSection issue={issue} />
@@ -742,6 +823,9 @@ export default function IssueDetailScreen() {
           expandedThreads={expandedThreads}
           onToggleThread={toggleThread}
           onSortChange={handleSortChange}
+          onReport={handleReportComment}
+          onBlockUser={handleBlockUser}
+          isBlockedUser={isBlocked}
         />
 
       </ScrollView>
@@ -763,6 +847,13 @@ export default function IssueDetailScreen() {
         ref={emailPromptRef}
         onConfirm={handleEmailConfirm}
         onDismiss={handleEmailDismiss}
+      />
+
+      {/* Report Sheet */}
+      <ReportSheet
+        ref={reportSheetRef}
+        onSubmit={handleReportSubmit}
+        isSubmitting={isReportingIssue || isReportingComment}
       />
     </KeyboardAvoidingView>
   );
@@ -799,6 +890,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
   },
   section: {
     paddingHorizontal: Spacing.lg,

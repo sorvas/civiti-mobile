@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { PUSH_TOKEN_KEY, PUSH_TOKEN_REGISTERED_KEY } from '@/constants/storage-keys';
+import { apiClient } from './api-client';
 
 let androidChannelReady = false;
 
@@ -58,16 +59,13 @@ export async function getAndStorePushToken(): Promise<string | null> {
   return token;
 }
 
-// TODO: Replace this stub with: apiClient.post('/user/push-token', { token })
-// then call markTokenRegistered() on success.
 export async function registerPushTokenWithBackend(token: string): Promise<void> {
-  if (__DEV__) {
-    console.log('[notifications] Backend token registration not yet implemented. Token:', token);
-  }
-
-  // ── Replace everything above this line with the real API call ──
-  // await apiClient.post('/user/push-token', { token });
-  // await markTokenRegistered();
+  const platform = Platform.OS === 'ios' ? 'ios' : 'android';
+  await apiClient<{ registered: boolean }>('/user/push-token', {
+    method: 'POST',
+    body: { token, platform },
+  });
+  await markTokenRegistered();
 }
 
 export async function markTokenRegistered(): Promise<void> {

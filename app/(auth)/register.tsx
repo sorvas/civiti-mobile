@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -20,6 +21,7 @@ import {
 } from '@/components/ui/bottom-sheet';
 import { Checkbox } from '@/components/ui/checkbox';
 import { TextInput } from '@/components/ui/text-input';
+import { TERMS_OF_SERVICE_URL } from '@/constants/api';
 import { EMAIL_REGEX, MIN_PASSWORD_LENGTH } from '@/constants/validation';
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
@@ -283,11 +285,19 @@ export default function RegisterScreen() {
                 editable={!anyLoading}
               />
 
-              <Checkbox
-                checked={termsAccepted}
-                onToggle={() => setTermsAccepted((prev) => !prev)}
-                label={Localization.register.termsLabel}
-              />
+              <View style={styles.termsRow}>
+                <Checkbox
+                  checked={termsAccepted}
+                  onToggle={() => setTermsAccepted((prev) => !prev)}
+                />
+                <Pressable
+                  onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL)}
+                  hitSlop={8}
+                  accessibilityRole="link"
+                >
+                  <ThemedText type="link">{Localization.register.termsLabel}</ThemedText>
+                </Pressable>
+              </View>
 
               {error && (
                 <View
@@ -406,5 +416,10 @@ const styles = StyleSheet.create({
   },
   termsActions: {
     gap: Spacing.md,
+  },
+  termsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
   },
 });
