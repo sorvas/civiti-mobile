@@ -24,9 +24,6 @@ export function useReportIssue() {
   return useMutation({
     mutationFn: ({ issueId, data }: { issueId: string; data: CreateReportRequest }) =>
       reportIssue(issueId, data),
-    onSuccess: () => {
-      Alert.alert(Localization.report.success);
-    },
     onError: (err) => {
       console.warn('[report] Failed to report issue:', err);
       showReportError(err);
@@ -38,9 +35,6 @@ export function useReportComment() {
   return useMutation({
     mutationFn: ({ commentId, data }: { commentId: string; data: CreateReportRequest }) =>
       reportComment(commentId, data),
-    onSuccess: () => {
-      Alert.alert(Localization.report.success);
-    },
     onError: (err) => {
       console.warn('[report] Failed to report comment:', err);
       showReportError(err);

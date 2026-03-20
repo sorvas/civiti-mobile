@@ -589,7 +589,10 @@ export default function IssueDetailScreen() {
   const handleReportSubmit = useCallback(
     (target: ReportTarget, reason: ReportReason, details: string | null) => {
       const data = { reason, details };
-      const onSuccess = () => reportSheetRef.current?.close();
+      const onSuccess = () => {
+        reportSheetRef.current?.close();
+        Alert.alert(Localization.report.success);
+      };
       if (target.type === 'issue') {
         reportIssueFn({ issueId: target.id, data }, { onSuccess });
       } else {

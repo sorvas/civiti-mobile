@@ -60,10 +60,14 @@ export async function getAndStorePushToken(): Promise<string | null> {
 }
 
 export async function registerPushTokenWithBackend(token: string): Promise<void> {
-  const platform = Platform.OS === 'ios' ? 'ios' : 'android';
+  const os = Platform.OS;
+  if (os !== 'ios' && os !== 'android') {
+    console.warn('[notifications] registerPushTokenWithBackend called on unsupported platform:', os);
+    return;
+  }
   await apiClient<{ success: boolean }>('/user/push-token', {
     method: 'POST',
-    body: { token, platform },
+    body: { token, platform: os },
   });
   await markTokenRegistered();
 }
