@@ -13,10 +13,11 @@ export type BottomSheetMethods = GorhomBottomSheet;
 
 type ThemedBottomSheetProps = PropsWithChildren<{
   snapPoints?: (string | number)[];
+  onChange?: (index: number) => void;
 }>;
 
 export const ThemedBottomSheet = forwardRef<GorhomBottomSheet, ThemedBottomSheetProps>(
-  function ThemedBottomSheet({ snapPoints = ['75%'], children }, ref) {
+  function ThemedBottomSheet({ snapPoints = ['75%'], onChange, children }, ref) {
     const surfaceColor = useThemeColor({}, 'surface');
     const borderColor = useThemeColor({}, 'border');
 
@@ -33,6 +34,7 @@ export const ThemedBottomSheet = forwardRef<GorhomBottomSheet, ThemedBottomSheet
         index={-1}
         snapPoints={snapPoints}
         enablePanDownToClose
+        onChange={onChange}
         backdropComponent={renderBackdrop}
         backgroundStyle={[styles.background, { backgroundColor: surfaceColor }]}
         handleIndicatorStyle={[styles.handle, { backgroundColor: borderColor }]}

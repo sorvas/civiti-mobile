@@ -33,10 +33,11 @@ export type ReportSheetRef = {
 type ReportSheetProps = {
   onSubmit: (target: ReportTarget, reason: ReportReason, details: string | null) => void;
   isSubmitting?: boolean;
+  onClose?: () => void;
 };
 
 export const ReportSheet = forwardRef<ReportSheetRef, ReportSheetProps>(
-  function ReportSheet({ onSubmit, isSubmitting }, ref) {
+  function ReportSheet({ onSubmit, isSubmitting, onClose }, ref) {
     const sheetRef = useRef<BottomSheetMethods>(null);
     const [target, setTarget] = useState<ReportTarget | null>(null);
     const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
@@ -65,8 +66,15 @@ export const ReportSheet = forwardRef<ReportSheetRef, ReportSheetProps>(
       onSubmit(target, selectedReason, details.trim() || null);
     }, [target, selectedReason, details, onSubmit]);
 
+    const handleSheetChange = useCallback(
+      (index: number) => {
+        if (index === -1) onClose?.();
+      },
+      [onClose],
+    );
+
     return (
-      <ThemedBottomSheet ref={sheetRef} snapPoints={['65%']}>
+      <ThemedBottomSheet ref={sheetRef} snapPoints={['65%']} onChange={handleSheetChange}>
         <View style={styles.content}>
           <ThemedText type="h3">{Localization.report.title}</ThemedText>
 

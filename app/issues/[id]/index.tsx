@@ -241,6 +241,7 @@ function CommentsSection({
   isBlockedUser: (userId: string) => boolean;
 }) {
   const [sortMode, setSortMode] = useState<SortMode>('newest');
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
   const textSecondary = useThemeColor({}, 'textSecondary');
   const accent = useThemeColor({}, 'accent');
 
@@ -257,6 +258,10 @@ function CommentsSection({
     setSortMode((prev) => (prev === 'newest' ? 'mostHelpful' : 'newest'));
     onSortChange();
   }, [onSortChange]);
+
+  const handleReveal = useCallback((id: string) => {
+    setRevealedIds((prev) => new Set(prev).add(id));
+  }, []);
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
@@ -343,6 +348,8 @@ function CommentsSection({
                   }
                   onReport={onReport}
                   onBlockUser={onBlockUser}
+                  isRevealed={revealedIds.has(comment.id)}
+                  onReveal={handleReveal}
                 />
                 {isExpanded
                   ? replies.length > 0
@@ -365,6 +372,8 @@ function CommentsSection({
                           isReply
                           onReport={onReport}
                           onBlockUser={onBlockUser}
+                          isRevealed={revealedIds.has(reply.id)}
+                          onReveal={handleReveal}
                         />
                       ))
                     : (
@@ -864,6 +873,7 @@ export default function IssueDetailScreen() {
         ref={reportSheetRef}
         onSubmit={handleReportSubmit}
         isSubmitting={reportTargetType === 'issue' ? isReportingIssue : isReportingComment}
+        onClose={() => setReportTargetType(null)}
       />
     </KeyboardAvoidingView>
   );

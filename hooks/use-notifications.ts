@@ -134,9 +134,11 @@ export function useNotifications(): NotificationBadgeValue {
       if (cancelled) return;
       if (existing) {
         if (!(await isTokenRegistered())) {
-          void registerPushTokenWithBackend(existing).catch((err: unknown) => {
+          try {
+            await registerPushTokenWithBackend(existing);
+          } catch (err) {
             console.warn('[notifications] Backend registration retry failed:', err);
-          });
+          }
         }
         return;
       }
