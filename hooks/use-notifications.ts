@@ -15,6 +15,7 @@ import { Localization } from '@/constants/localization';
 import { PUSH_PERMISSION_ASKED_KEY } from '@/constants/storage-keys';
 import {
   clearStoredPushToken,
+  clearTokenRegisteredFlag,
   deregisterPushToken,
   getAndStorePushToken,
   getStoredPushToken,
@@ -259,6 +260,7 @@ export function useNotifications(): NotificationBadgeValue {
             console.warn('[notifications] Backend deregistration failed:', err);
           }
         }
+        await clearTokenRegisteredFlag();
         await clearStoredPushToken();
         void AsyncStorage.removeItem(PUSH_PERMISSION_ASKED_KEY).catch((err: unknown) => {
           console.warn('[notifications] Failed to clear permission-asked flag on sign-out:', err);

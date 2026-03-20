@@ -15,18 +15,19 @@ type ThemedBottomSheetProps = PropsWithChildren<{
   snapPoints?: (string | number)[];
   onChange?: (index: number) => void;
   enablePanDownToClose?: boolean;
+  backdropPressBehavior?: 'close' | 'none' | 'collapse';
 }>;
 
 export const ThemedBottomSheet = forwardRef<GorhomBottomSheet, ThemedBottomSheetProps>(
-  function ThemedBottomSheet({ snapPoints = ['75%'], onChange, enablePanDownToClose = true, children }, ref) {
+  function ThemedBottomSheet({ snapPoints = ['75%'], onChange, enablePanDownToClose = true, backdropPressBehavior = 'close', children }, ref) {
     const surfaceColor = useThemeColor({}, 'surface');
     const borderColor = useThemeColor({}, 'border');
 
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
-        <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} />
+        <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.5} pressBehavior={backdropPressBehavior} />
       ),
-      [],
+      [backdropPressBehavior],
     );
 
     return (

@@ -290,6 +290,7 @@ export default function RegisterScreen() {
                 <Checkbox
                   checked={termsAccepted}
                   onToggle={() => setTermsAccepted((prev) => !prev)}
+                  accessibilityLabel={Localization.register.termsLabel}
                 />
                 <Pressable
                   onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL).catch(() => Alert.alert(Localization.errors.generic))}

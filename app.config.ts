@@ -26,7 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: 'com.sorvas.civiti',
     config: {
       googleMaps: {
-        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '',
+        apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? 'API_KEY_NOT_CONFIGURED',
       },
     },
   },
