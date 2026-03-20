@@ -604,8 +604,12 @@ export default function IssueDetailScreen() {
   const handleReportSubmit = useCallback(
     (target: ReportTarget, reason: ReportReason, details: string | null) => {
       const data = { reason, details };
+      const submittedType = target.type;
       const onSuccess = () => {
-        reportSheetRef.current?.close();
+        // Only close if the sheet still shows the same target type
+        if (reportTargetType === submittedType) {
+          reportSheetRef.current?.close();
+        }
         Alert.alert(Localization.report.success);
       };
       if (target.type === 'issue') {
@@ -614,7 +618,7 @@ export default function IssueDetailScreen() {
         reportCommentFn({ commentId: target.id, data }, { onSuccess });
       }
     },
-    [reportIssueFn, reportCommentFn],
+    [reportIssueFn, reportCommentFn, reportTargetType],
   );
 
   const handleBlockUser = useCallback(

@@ -16,6 +16,7 @@ import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
 import { useProfile } from '@/hooks/use-profile';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { deregisterAndCleanupPushToken } from '@/services/notifications';
 import { deleteUserAccount, updateUserProfile } from '@/services/user';
 import { useAuth } from '@/store/auth-context';
 
@@ -99,7 +100,9 @@ export default function SettingsScreen() {
   const { mutate: deleteAccount, isPending: isDeleting } = useMutation({
     mutationFn: deleteUserAccount,
     onSuccess: () => {
-      signOut()
+      deregisterAndCleanupPushToken()
+        .catch(() => {})
+        .then(() => signOut())
         .then(({ error }) => {
           if (error) {
             console.warn('[settings] Sign out after delete failed:', error);

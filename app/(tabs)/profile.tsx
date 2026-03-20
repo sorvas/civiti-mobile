@@ -17,6 +17,7 @@ import { BorderRadius, Spacing } from '@/constants/spacing';
 import { BrandColors } from '@/constants/theme';
 import { useProfile } from '@/hooks/use-profile';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { deregisterAndCleanupPushToken } from '@/services/notifications';
 import { useAuth } from '@/store/auth-context';
 
 const AVATAR_SIZE = 80;
@@ -54,7 +55,9 @@ export default function ProfileScreen() {
           text: Localization.profile.logoutConfirmYes,
           style: 'destructive',
           onPress: () => {
-            signOut()
+            deregisterAndCleanupPushToken()
+              .catch(() => {})
+              .then(() => signOut())
               .then(({ error }) => {
                 if (error) {
                   console.warn('[profile] Logout failed:', error);
