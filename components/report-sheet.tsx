@@ -68,7 +68,12 @@ export const ReportSheet = forwardRef<ReportSheetRef, ReportSheetProps>(
 
     const handleSheetChange = useCallback(
       (index: number) => {
-        if (index === -1) onClose?.();
+        if (index === -1) {
+          onClose?.();
+          setSelectedReason(null);
+          setDetails('');
+          setTarget(null);
+        }
       },
       [onClose],
     );
