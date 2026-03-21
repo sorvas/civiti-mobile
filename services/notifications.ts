@@ -73,14 +73,10 @@ export async function registerPushTokenWithBackend(token: string): Promise<void>
 }
 
 export async function deregisterPushToken(token: string): Promise<void> {
-  try {
-    await apiClient<{ success: boolean }>('/user/push-token/deregister', {
-      method: 'POST',
-      body: { token },
-    });
-  } catch (error) {
-    console.warn('[notifications] Backend push token deregistration failed:', error);
-  }
+  await apiClient<{ success: boolean }>('/user/push-token/deregister', {
+    method: 'POST',
+    body: { token },
+  });
 }
 
 /** Call BEFORE signOut() while the auth token is still valid. */

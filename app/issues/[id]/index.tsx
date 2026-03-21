@@ -510,7 +510,7 @@ export default function IssueDetailScreen() {
   const { mutate: updateCommentFn, isPending: isEditSaving } = useUpdateComment(id);
   const { mutate: reportIssueFn, isPending: isReportingIssue } = useReportIssue();
   const { mutate: reportCommentFn, isPending: isReportingComment } = useReportComment();
-  const { mutate: blockUserFn } = useBlockUser();
+  const { mutate: blockUserFn, isPending: isBlocking } = useBlockUser();
   const { isBlocked } = useBlockedUsers();
   const reportSheetRef = useRef<ReportSheetRef>(null);
   const [reportTargetType, setReportTargetType] = useState<'issue' | 'comment' | null>(null);
@@ -632,6 +632,7 @@ export default function IssueDetailScreen() {
 
   const handleBlockUser = useCallback(
     (comment: CommentResponse) => {
+      if (isBlocking) return;
       const name = comment.user.displayName ?? '?';
       Alert.alert(
         Localization.blockedUsers.blockConfirmTitle,
@@ -646,7 +647,7 @@ export default function IssueDetailScreen() {
         ],
       );
     },
-    [blockUserFn],
+    [blockUserFn, isBlocking],
   );
 
   // Email flow state
