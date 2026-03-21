@@ -99,7 +99,9 @@ export default function SettingsScreen() {
 
   const { mutate: deleteAccount, isPending: isDeleting } = useMutation({
     mutationFn: async () => {
-      await deregisterAndCleanupPushToken();
+      await deregisterAndCleanupPushToken().catch((err) =>
+        console.warn('[settings] Push token cleanup failed before delete:', err),
+      );
       return deleteUserAccount();
     },
     onSuccess: () => {

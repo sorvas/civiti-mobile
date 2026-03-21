@@ -58,6 +58,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: () => {
             deregisterAndCleanupPushToken()
+              .catch((err) => console.warn('[profile] Push token cleanup failed:', err))
               .then(() => signOut())
               .then(({ error }) => {
                 if (error) {
