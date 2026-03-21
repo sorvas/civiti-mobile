@@ -293,11 +293,18 @@ export default function RegisterScreen() {
                   accessibilityLabel={Localization.register.termsCheckboxLabel}
                 />
                 <Pressable
-                  onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL).catch(() => Alert.alert(Localization.errors.generic))}
+                  onPress={() => setTermsAccepted((prev) => !prev)}
                   hitSlop={8}
-                  accessibilityRole="link"
                 >
-                  <ThemedText type="link">{Localization.register.termsLabel}</ThemedText>
+                  <ThemedText type="body">
+                    {Localization.register.termsAcceptPrefix}{' '}
+                    <ThemedText
+                      type="link"
+                      onPress={() => Linking.openURL(TERMS_OF_SERVICE_URL).catch(() => Alert.alert(Localization.errors.generic))}
+                    >
+                      {Localization.register.termsLinkText}
+                    </ThemedText>
+                  </ThemedText>
                 </Pressable>
               </View>
 

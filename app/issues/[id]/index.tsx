@@ -377,21 +377,16 @@ function CommentsSection({
                           onReveal={handleReveal}
                         />
                       ))
-                    : comment.replyCount > 0 ? (
-                        <ThemedText
-                          type="caption"
-                          style={{ color: textSecondary, marginLeft: Spacing['2xl'] }}
-                        >
-                          {Localization.comments.repliesHiddenByBlock}
-                        </ThemedText>
-                      ) : (
+                    : (
                         <ThemedText
                           type="caption"
                           style={{ color: textSecondary, marginLeft: Spacing['2xl'] }}
                         >
                           {hasNextPage
                             ? Localization.comments.repliesMayLoadWithMore
-                            : Localization.comments.repliesUnavailable}
+                            : comment.replyCount > 0
+                              ? Localization.comments.repliesHiddenByBlock
+                              : Localization.comments.repliesUnavailable}
                         </ThemedText>
                       )
                   : null}

@@ -257,6 +257,8 @@ export const Localization = {
     displayNameLabel: 'Nume afișat',
     termsLabel: 'Accept termenii și condițiile',
     termsCheckboxLabel: 'Acceptă termenii',
+    termsAcceptPrefix: 'Accept',
+    termsLinkText: 'termenii și condițiile',
     submitButton: 'Creează contul',
     hasAccount: 'Ai deja cont?',
     login: 'Conectează-te',
