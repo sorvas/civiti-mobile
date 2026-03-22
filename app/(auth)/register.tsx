@@ -432,6 +432,7 @@ const styles = StyleSheet.create({
   termsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: Spacing.xs,
   },
 });
