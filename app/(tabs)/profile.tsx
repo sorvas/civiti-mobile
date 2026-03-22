@@ -71,6 +71,7 @@ export default function ProfileScreen() {
               })
               .catch((err) => {
                 console.warn('[profile] Logout unexpected error:', err);
+                queryClient.clear();
                 Alert.alert(Localization.errors.generic);
               });
           },

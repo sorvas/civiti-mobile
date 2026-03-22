@@ -352,7 +352,7 @@ export default function RegisterScreen() {
       </ScrollView>
 
       {/* Terms confirmation bottom sheet (shown after OAuth success) */}
-      <ThemedBottomSheet ref={termsSheetRef} snapPoints={['35%']}>
+      <ThemedBottomSheet ref={termsSheetRef} snapPoints={['35%']} enablePanDownToClose={false} backdropPressBehavior="none">
         <View style={styles.termsSheet}>
           <ThemedText type="h3">{Localization.register.termsPromptTitle}</ThemedText>
           <ThemedText type="body">{Localization.register.termsPromptBody}</ThemedText>

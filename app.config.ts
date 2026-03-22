@@ -65,6 +65,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       'expo-location',
       {
+        locationWhenInUsePermission:
+          'Civiti are nevoie de acces la locație pentru a afișa harta problemelor comunitare.',
         isAndroidBackgroundLocationEnabled: false,
         isAndroidForegroundServiceEnabled: false,
       },
