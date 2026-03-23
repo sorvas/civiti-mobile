@@ -155,7 +155,6 @@ export const Localization = {
     title: 'Comentarii',
     deleted: '[Comentariu șters]',
     hidden: '[Comentariu ascuns]',
-    hiddenTapToReveal: 'Atinge pentru a vedea',
     reply: 'răspuns',
     replies: 'răspunsuri',
     showReplies: (count: number) => {
@@ -186,8 +185,6 @@ export const Localization = {
     editCancel: 'Anulează',
     repliesUnavailable: 'Răspunsurile nu sunt disponibile momentan',
     repliesMayLoadWithMore: 'Răspunsurile pot apărea la încărcare suplimentară',
-    repliesHiddenByBlock: 'Răspunsurile sunt ascunse deoarece ai blocat autorii',
-    allHiddenByBlock: 'Comentariile sunt ascunse deoarece ai blocat autorii',
   },
 
   // Activity feed

@@ -34,7 +34,7 @@ import { UrgencyBadge } from '@/components/ui/urgency-badge';
 import { IssueStatus } from '@/constants/enums';
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
-import { useBlockedUsers, useBlockUser } from '@/hooks/use-blocked-users';
+import { useBlockUser } from '@/hooks/use-blocked-users';
 import { useComments, useUpdateComment } from '@/hooks/use-comments';
 import { useEmailTracking } from '@/hooks/use-email-tracking';
 import { useIssueDetail } from '@/hooks/use-issue-detail';
@@ -222,7 +222,6 @@ function CommentsSection({
   onSortChange,
   onReport,
   onBlockUser,
-  isBlockedUser,
 }: {
   issueId: string;
   currentUserId: string | undefined;
@@ -238,10 +237,8 @@ function CommentsSection({
   onSortChange: () => void;
   onReport: (comment: CommentResponse) => void;
   onBlockUser: (comment: CommentResponse) => void;
-  isBlockedUser: (userId: string) => boolean;
 }) {
   const [sortMode, setSortMode] = useState<SortMode>('newest');
-  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set());
   const textSecondary = useThemeColor({}, 'textSecondary');
   const accent = useThemeColor({}, 'accent');
 
@@ -250,7 +247,7 @@ function CommentsSection({
     : { sortBy: 'helpfulCount' as const, sortDescending: true };
 
   const {
-    comments, hasNextPage, fetchNextPage,
+    comments, totalComments, hasNextPage, fetchNextPage,
     isFetchingNextPage, isLoading, isError, error: commentsError, refetch,
   } = useComments(issueId, sortParams);
 
@@ -259,18 +256,13 @@ function CommentsSection({
     onSortChange();
   }, [onSortChange]);
 
-  const handleReveal = useCallback((id: string) => {
-    setRevealedIds((prev) => new Set(prev).add(id));
-  }, []);
-
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) void fetchNextPage();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const threaded = useMemo(() => {
-    const visible = comments.filter((c) => !isBlockedUser(c.user.id));
-    const commentIds = new Set(visible.map((c) => c.id));
-    const items = visible.filter(
+    const commentIds = new Set(comments.map((c) => c.id));
+    const items = comments.filter(
       (c) => !c.parentCommentId || !commentIds.has(c.parentCommentId),
     );
     const itemIds = new Set(items.map((c) => c.id));
@@ -280,10 +272,9 @@ function CommentsSection({
       if (c.parentCommentId) parentMap.set(c.id, c.parentCommentId);
     }
     const repliesByParent = new Map<string, CommentResponse[]>();
-    for (const c of visible) {
+    for (const c of comments) {
       if (!c.parentCommentId) continue;
-      if (itemIds.has(c.id)) continue; // already promoted to top-level — don't also nest it
-      // Walk up to find the nearest ancestor that is a top-level item
+      if (itemIds.has(c.id)) continue;
       let rootId = c.parentCommentId;
       const visited = new Set<string>();
       while (!itemIds.has(rootId) && parentMap.has(rootId)) {
@@ -296,13 +287,13 @@ function CommentsSection({
       list.push(c);
       repliesByParent.set(rootId, list);
     }
-    const commentById = new Map(visible.map((c) => [c.id, c]));
-    return { items, repliesByParent, commentById, visibleCount: visible.length };
-  }, [comments, isBlockedUser]);
+    const commentById = new Map(comments.map((c) => [c.id, c]));
+    return { items, repliesByParent, commentById };
+  }, [comments]);
 
   return (
-    <SectionBlock title={`${Localization.comments.title} (${threaded.visibleCount})`}>
-      {threaded.visibleCount > 0 ? (
+    <SectionBlock title={`${Localization.comments.title} (${totalComments})`}>
+      {totalComments > 0 ? (
         <Pressable onPress={toggleSort} style={styles.sortToggle} hitSlop={8} accessibilityRole="button">
           <ThemedText type="caption" style={{ color: accent }}>
             {sortMode === 'newest'
@@ -316,11 +307,9 @@ function CommentsSection({
         <ActivityIndicator style={styles.commentLoader} />
       ) : isError ? (
         <ErrorState message={commentsError?.message} onRetry={refetch} />
-      ) : comments.length === 0 || threaded.visibleCount === 0 ? (
+      ) : comments.length === 0 ? (
         <ThemedText type="caption" style={{ color: textSecondary }}>
-          {comments.length === 0
-            ? Localization.states.emptyComments
-            : Localization.comments.allHiddenByBlock}
+          {Localization.states.emptyComments}
         </ThemedText>
       ) : (
         <>
@@ -350,8 +339,6 @@ function CommentsSection({
                   }
                   onReport={onReport}
                   onBlockUser={onBlockUser}
-                  isRevealed={revealedIds.has(comment.id)}
-                  onReveal={handleReveal}
                 />
                 {isExpanded
                   ? replies.length > 0
@@ -374,8 +361,6 @@ function CommentsSection({
                           isReply
                           onReport={onReport}
                           onBlockUser={onBlockUser}
-                          isRevealed={revealedIds.has(reply.id)}
-                          onReveal={handleReveal}
                         />
                       ))
                     : (
@@ -385,9 +370,7 @@ function CommentsSection({
                         >
                           {hasNextPage
                             ? Localization.comments.repliesMayLoadWithMore
-                            : comment.replyCount > 0
-                              ? Localization.comments.repliesHiddenByBlock
-                              : Localization.comments.repliesUnavailable}
+                            : Localization.comments.repliesUnavailable}
                         </ThemedText>
                       )
                   : null}
@@ -511,7 +494,6 @@ export default function IssueDetailScreen() {
   const { mutate: reportCommentFn, isPending: isReportingComment } = useReportComment();
   const { mutate: blockUserFn } = useBlockUser();
   const [blockingId, setBlockingId] = useState<string | null>(null);
-  const { isBlocked } = useBlockedUsers();
   const reportSheetRef = useRef<ReportSheetRef>(null);
   const [reportTargetType, setReportTargetType] = useState<'issue' | 'comment' | null>(null);
   const reportTargetTypeRef = useRef<'issue' | 'comment' | null>(null);
@@ -864,7 +846,6 @@ export default function IssueDetailScreen() {
           onSortChange={handleSortChange}
           onReport={handleReportComment}
           onBlockUser={handleBlockUser}
-          isBlockedUser={isBlocked}
         />
 
       </ScrollView>

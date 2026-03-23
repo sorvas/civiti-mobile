@@ -31,8 +31,6 @@ type CommentItemProps = {
   onToggleReplies?: (commentId: string) => void;
   onReport?: (comment: CommentResponse) => void;
   onBlockUser?: (comment: CommentResponse) => void;
-  isRevealed?: boolean;
-  onReveal?: (commentId: string) => void;
 };
 
 export function CommentItem({
@@ -53,8 +51,6 @@ export function CommentItem({
   onToggleReplies,
   onReport,
   onBlockUser,
-  isRevealed = false,
-  onReveal,
 }: CommentItemProps) {
   const textSecondary = useThemeColor({}, 'textSecondary');
   const border = useThemeColor({}, 'border');
@@ -67,7 +63,7 @@ export function CommentItem({
   const { mutate: deleteCommentFn, isPending: isDeletePending } = useDeleteComment(issueId);
 
   const isOwn = currentUserId != null && comment.user.id === currentUserId;
-  const isHidden = comment.isHidden && !isRevealed && !isOwn;
+  const isHidden = comment.isHidden && !isOwn;
 
   const handleVote = useCallback(() => {
     if (isVotePending) return;
@@ -176,14 +172,9 @@ export function CommentItem({
             </ThemedText>
           ) : isHidden ? (
             <View style={styles.hiddenRow}>
-              <Pressable onPress={() => onReveal?.(comment.id)} hitSlop={4} style={styles.hiddenContent}>
-                <ThemedText type="body" style={{ color: textSecondary, fontStyle: 'italic' }}>
-                  {Localization.comments.hidden}
-                </ThemedText>
-                <ThemedText type="caption" style={{ color: accent }}>
-                  {Localization.comments.hiddenTapToReveal}
-                </ThemedText>
-              </Pressable>
+              <ThemedText type="body" style={[styles.hiddenContent, { color: textSecondary, fontStyle: 'italic' }]}>
+                {Localization.comments.hidden}
+              </ThemedText>
               {!isOwn && onReport ? (
                 <Pressable
                   onPress={handleReport}
