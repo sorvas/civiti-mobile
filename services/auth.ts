@@ -163,13 +163,16 @@ async function performNativeAppleSignIn() {
     if (credential.fullName.givenName) nameParts.push(credential.fullName.givenName);
     if (credential.fullName.familyName) nameParts.push(credential.fullName.familyName);
     if (nameParts.length > 0) {
-      await supabase.auth.updateUser({
+      const { error: updateError } = await supabase.auth.updateUser({
         data: {
           full_name: nameParts.join(' '),
           given_name: credential.fullName.givenName,
           family_name: credential.fullName.familyName,
         },
       });
+      if (updateError) {
+        console.warn('[auth] Failed to save Apple user name:', updateError.message);
+      }
     }
   }
 
