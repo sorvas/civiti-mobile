@@ -584,6 +584,7 @@ export const Localization = {
     submit: 'Trimite raportul',
     success: 'Raportul a fost trimis',
     alreadyReported: 'Ai raportat deja acest conținut',
+    cannotReport: 'Nu poți raporta propriul conținut',
     reasons: {
       Spam: 'Spam',
       Harassment: 'Hărțuire',

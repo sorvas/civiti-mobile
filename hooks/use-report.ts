@@ -8,6 +8,10 @@ import type { CreateReportRequest } from '@/types/reports';
 
 function showReportError(err: unknown) {
   if (err instanceof ApiError) {
+    if (err.status === 400) {
+      Alert.alert(Localization.report.cannotReport);
+      return;
+    }
     if (err.status === 409) {
       Alert.alert(Localization.report.alreadyReported);
       return;
@@ -25,7 +29,7 @@ export function useReportIssue() {
     mutationFn: ({ issueId, data }: { issueId: string; data: CreateReportRequest }) =>
       reportIssue(issueId, data),
     onError: (err) => {
-      console.warn('[report] Failed to report issue:', err);
+      console.warn('[report] Failed to report issue:', err instanceof ApiError ? `${err.status}: ${err.message}` : err);
       showReportError(err);
     },
   });

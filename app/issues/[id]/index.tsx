@@ -603,10 +603,15 @@ export default function IssueDetailScreen() {
         }
         Alert.alert(Localization.report.success);
       };
+      const onError = () => {
+        reportSheetRef.current?.close();
+        reportTargetTypeRef.current = null;
+        setReportTargetType(null);
+      };
       if (target.type === 'issue') {
-        reportIssueFn({ issueId: target.id, data }, { onSuccess });
+        reportIssueFn({ issueId: target.id, data }, { onSuccess, onError });
       } else {
-        reportCommentFn({ commentId: target.id, data }, { onSuccess });
+        reportCommentFn({ commentId: target.id, data }, { onSuccess, onError });
       }
     },
     [reportIssueFn, reportCommentFn],

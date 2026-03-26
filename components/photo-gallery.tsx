@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -8,6 +8,7 @@ import {
   View,
   type ViewToken,
 } from 'react-native';
+import ImageViewing from 'react-native-image-viewing';
 
 import { Localization } from '@/constants/localization';
 import { BorderRadius, Spacing } from '@/constants/spacing';
@@ -72,10 +73,21 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
     [],
   );
 
+  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
+
+  const viewerImages = useMemo(
+    () => validPhotos.map((p) => ({ uri: p.url })),
+    [validPhotos],
+  );
+
   const handlePhotoPress = useCallback((id: string) => {
-    // TODO(S09): Fullscreen photo viewer
-    if (__DEV__) console.log('[S09] Fullscreen photo viewer:', id);
-  }, []);
+    const index = validPhotos.findIndex((p) => p.id === id);
+    if (index >= 0) {
+      setViewerIndex(index);
+      setViewerVisible(true);
+    }
+  }, [validPhotos]);
 
   const getItemLayout = useCallback(
     (_: unknown, index: number) => ({
@@ -125,6 +137,15 @@ export function PhotoGallery({ photos }: PhotoGalleryProps) {
           ))}
         </View>
       )}
+
+      <ImageViewing
+        images={viewerImages}
+        imageIndex={viewerIndex}
+        visible={viewerVisible}
+        onRequestClose={() => setViewerVisible(false)}
+        swipeToCloseEnabled
+        doubleTapToZoomEnabled
+      />
     </View>
   );
 }
