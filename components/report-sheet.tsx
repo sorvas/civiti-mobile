@@ -1,12 +1,16 @@
-import { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import { forwardRef, useCallback, useImperativeHandle, useState } from 'react';
+import {
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import {
-  ThemedBottomSheet,
-  type BottomSheetMethods,
-} from '@/components/ui/bottom-sheet';
 import { Button } from '@/components/ui/button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Localization } from '@/constants/localization';
@@ -39,101 +43,150 @@ type ReportSheetProps = {
 
 export const ReportSheet = forwardRef<ReportSheetRef, ReportSheetProps>(
   function ReportSheet({ onSubmit, isSubmitting, onClose }, ref) {
-    const sheetRef = useRef<BottomSheetMethods>(null);
+    const [visible, setVisible] = useState(false);
     const [target, setTarget] = useState<ReportTarget | null>(null);
     const [selectedReason, setSelectedReason] = useState<ReportReason | null>(null);
     const [details, setDetails] = useState('');
+    const insets = useSafeAreaInsets();
 
     const textColor = useThemeColor({}, 'text');
     const textSecondary = useThemeColor({}, 'textSecondary');
     const accent = useThemeColor({}, 'accent');
     const border = useThemeColor({}, 'border');
     const surface = useThemeColor({}, 'surface');
+    const background = useThemeColor({}, 'background');
 
     useImperativeHandle(ref, () => ({
       open: (t: ReportTarget) => {
         setTarget(t);
         setSelectedReason(null);
         setDetails('');
-        sheetRef.current?.snapToIndex(0);
+        setVisible(true);
       },
       close: () => {
-        sheetRef.current?.close();
+        setVisible(false);
       },
     }));
+
+    const handleDismiss = useCallback(() => {
+      if (isSubmitting) return;
+      setVisible(false);
+      onClose?.();
+      setSelectedReason(null);
+      setDetails('');
+      setTarget(null);
+    }, [isSubmitting, onClose]);
 
     const handleSubmit = useCallback(() => {
       if (!target || !selectedReason || isSubmitting) return;
       onSubmit(target, selectedReason, details.trim() || null);
     }, [target, selectedReason, details, onSubmit, isSubmitting]);
 
-    const handleSheetChange = useCallback(
-      (index: number) => {
-        if (index === -1) {
-          onClose?.();
-          setSelectedReason(null);
-          setDetails('');
-          setTarget(null);
-        }
-      },
-      [onClose],
-    );
-
     return (
-      <ThemedBottomSheet ref={sheetRef} snapPoints={['65%']} onChange={handleSheetChange} enablePanDownToClose={!isSubmitting} backdropPressBehavior={isSubmitting ? 'none' : 'close'}>
-        <View style={styles.content}>
-          <ThemedText type="h3">{Localization.report.title}</ThemedText>
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent
+        onRequestClose={handleDismiss}
+      >
+        <Pressable style={styles.backdrop} onPress={handleDismiss}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={styles.keyboardView}
+          >
+            <Pressable
+              style={[
+                styles.sheet,
+                {
+                  backgroundColor: surface,
+                  paddingBottom: Math.max(insets.bottom, Spacing.lg),
+                },
+              ]}
+              onPress={() => {}}
+            >
+              <View style={styles.handle}>
+                <View style={[styles.handleBar, { backgroundColor: border }]} />
+              </View>
 
-          <ThemedText type="bodyBold">{Localization.report.reasonLabel}</ThemedText>
-          <View accessibilityRole="radiogroup" accessibilityLabel={Localization.report.reasonLabel}>
-            {REASONS.map((reason) => (
-              <Pressable
-                key={reason}
-                onPress={() => setSelectedReason(reason)}
-                style={styles.reasonRow}
-                hitSlop={4}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: selectedReason === reason }}
-              >
-                <IconSymbol
-                  name={selectedReason === reason ? 'checkmark.circle.fill' : 'circle'}
-                  size={20}
-                  color={selectedReason === reason ? accent : textSecondary}
+              <View style={styles.content}>
+                <ThemedText type="h3">{Localization.report.title}</ThemedText>
+
+                <ThemedText type="bodyBold">{Localization.report.reasonLabel}</ThemedText>
+                <View accessibilityRole="radiogroup" accessibilityLabel={Localization.report.reasonLabel}>
+                  {REASONS.map((reason) => (
+                    <Pressable
+                      key={reason}
+                      onPress={() => setSelectedReason(reason)}
+                      style={styles.reasonRow}
+                      hitSlop={4}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: selectedReason === reason }}
+                    >
+                      <IconSymbol
+                        name={selectedReason === reason ? 'checkmark.circle.fill' : 'circle'}
+                        size={20}
+                        color={selectedReason === reason ? accent : textSecondary}
+                      />
+                      <ThemedText type="body">
+                        {Localization.report.reasons[reason]}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+
+                <TextInput
+                  style={[
+                    styles.detailsInput,
+                    { color: textColor, borderColor: border, backgroundColor: background },
+                  ]}
+                  placeholder={Localization.report.detailsPlaceholder}
+                  placeholderTextColor={textSecondary}
+                  value={details}
+                  onChangeText={setDetails}
+                  multiline
+                  maxLength={500}
                 />
-                <ThemedText type="body">
-                  {Localization.report.reasons[reason]}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </View>
 
-          <BottomSheetTextInput
-            style={[
-              styles.detailsInput,
-              { color: textColor, borderColor: border, backgroundColor: surface },
-            ]}
-            placeholder={Localization.report.detailsPlaceholder}
-            placeholderTextColor={textSecondary}
-            value={details}
-            onChangeText={setDetails}
-            multiline
-            maxLength={500}
-          />
-
-          <Button
-            variant="primary"
-            title={Localization.report.submit}
-            onPress={handleSubmit}
-            disabled={!selectedReason || isSubmitting}
-            isLoading={isSubmitting}
-          />
-        </View>
-      </ThemedBottomSheet>
+                <Button
+                  variant="primary"
+                  title={Localization.report.submit}
+                  onPress={handleSubmit}
+                  disabled={!selectedReason || isSubmitting}
+                  isLoading={isSubmitting}
+                />
+              </View>
+            </Pressable>
+          </KeyboardAvoidingView>
+        </Pressable>
+      </Modal>
     );
   },
 );
 
 const styles = StyleSheet.create({
+  backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  keyboardView: {
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    borderTopLeftRadius: BorderRadius.lg,
+    borderTopRightRadius: BorderRadius.lg,
+    borderCurve: 'continuous',
+  },
+  handle: {
+    alignItems: 'center',
+    paddingTop: Spacing.sm,
+    paddingBottom: Spacing.xs,
+  },
+  handleBar: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+  },
   content: {
     padding: Spacing.lg,
     gap: Spacing.md,

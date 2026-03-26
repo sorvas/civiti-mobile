@@ -5,7 +5,6 @@ import {
   Alert,
   AppState,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -39,13 +38,14 @@ import { useComments, useUpdateComment } from '@/hooks/use-comments';
 import { useEmailTracking } from '@/hooks/use-email-tracking';
 import { useIssueDetail } from '@/hooks/use-issue-detail';
 import { useProfile } from '@/hooks/use-profile';
-import { useReportComment, useReportIssue } from '@/hooks/use-report';
+import { showReportError, useReportComment, useReportIssue } from '@/hooks/use-report';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { useAuth } from '@/store/auth-context';
 import type { CommentResponse } from '@/types/comments';
 import type { ReportReason } from '@/types/reports';
 import type { IssueAuthorityResponse, IssueDetailResponse } from '@/types/issues';
-import { buildMailto } from '@/utils/build-mailto';
+import { openComposer } from 'react-native-email-link';
+import { buildEmailParts } from '@/utils/build-mailto';
 import { formatTimeAgo } from '@/utils/format-time-ago';
 
 const NOOP = () => {};
@@ -603,10 +603,16 @@ export default function IssueDetailScreen() {
         }
         Alert.alert(Localization.report.success);
       };
+      const onError = (err: Error) => {
+        reportSheetRef.current?.close();
+        reportTargetTypeRef.current = null;
+        setReportTargetType(null);
+        showReportError(err);
+      };
       if (target.type === 'issue') {
-        reportIssueFn({ issueId: target.id, data }, { onSuccess });
+        reportIssueFn({ issueId: target.id, data }, { onSuccess, onError });
       } else {
-        reportCommentFn({ commentId: target.id, data }, { onSuccess });
+        reportCommentFn({ commentId: target.id, data }, { onSuccess, onError });
       }
     },
     [reportIssueFn, reportCommentFn],
@@ -695,17 +701,23 @@ export default function IssueDetailScreen() {
     (authority: IssueAuthorityResponse) => {
       if (!issue || !authority.email) return;
       requireAuth(() => {
-        const mailto = buildMailto({
+        const { to, subject, body } = buildEmailParts({
           authority,
           issue,
           userName: profile?.displayName ?? null,
         });
-        Linking.openURL(mailto)
+        openComposer({
+          to,
+          subject,
+          body,
+          title: Localization.email.chooseApp,
+          cancelLabel: Localization.actions.cancel,
+        })
           .then(() => {
             emailFlowActiveRef.current = true;
           })
           .catch((err) => {
-            console.warn('[email] Failed to open mailto link for issue', issue.id, err);
+            console.warn('[email] Failed to open email composer for issue', issue.id, err);
             Alert.alert(Localization.email.openFailed);
           });
       });

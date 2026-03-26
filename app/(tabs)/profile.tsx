@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { AchievementCard } from '@/components/achievement-card';
@@ -26,6 +27,7 @@ const MAX_RECENT_BADGES = 5;
 const MAX_ACTIVE_ACHIEVEMENTS = 3;
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { session, signOut } = useAuth();
   const { data, isLoading, isError, refetch, isRefetching } = useProfile();
@@ -119,7 +121,7 @@ export default function ProfileScreen() {
   return (
     <ThemedView style={styles.flex}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + Spacing.lg }]}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={() => { void refetch(); }} tintColor={tintColor} />
         }

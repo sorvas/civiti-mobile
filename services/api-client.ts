@@ -83,6 +83,8 @@ export async function apiClient<T>(
 
   const url = buildUrl(path, params);
 
+  if (__DEV__) console.log(`[api-client] ${fetchOptions.method ?? 'GET'} ${url}`);
+
   let response: Response;
   try {
     response = await fetch(url, {
