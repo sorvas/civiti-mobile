@@ -226,6 +226,29 @@ export const Localization = {
     instructionsNote:
       'Conform OG 27/2002, petiția trebuie să conțină datele tale de identificare pentru a fi luată în considerare.',
     instructionsContinue: 'Am înțeles, deschide emailul',
+    // Petition template strings (OG 27/2002)
+    petition: {
+      subjectTemplate: (title: string) =>
+        `Petiție - [NUMELE TĂU COMPLET] - ${title}`,
+      salutation: (authorityName: string) => `Către: ${authorityName}`,
+      petitionerLine:
+        'Subsemnatul/a [NUMELE TĂU COMPLET], CNP: [CNP-UL TĂU], domiciliat(ă) în [ADRESA TA DE DOMICILIU], email: [ADRESA TA DE EMAIL], telefon: [NUMĂRUL TĂU DE TELEFON], vă adresez prezenta petiție prin care solicit să luați măsuri în legătură cu următoarea problemă:',
+      locationLabel: 'Locație:',
+      dateLabel: 'Data sesizării:',
+      locationFallback: 'Locație nespecificată',
+      authorityFallback: 'Autoritate',
+      defaultDesiredOutcome:
+        'Vă solicit să luați măsurile necesare pentru remedierea acestei probleme în cel mai scurt timp posibil.',
+      photosAttachment: (count: number) =>
+        `La prezenta petiție anexez ${count} ${count === 1 ? 'fotografie care documentează' : 'fotografii care documentează'} problema semnalată.`,
+      linkPrefix: 'Link către documentația completă:',
+      legalParagraph:
+        'Conform O.G. 27/2002 privind reglementarea activității de soluționare a petițiilor, vă rog să îmi comunicați răspunsul la adresa de domiciliu menționată mai sus sau prin email la [ADRESA TA DE EMAIL], în termenul legal de 30 de zile.',
+      registrationRequest:
+        'De asemenea, vă rog să îmi comunicați numărul de înregistrare al acestei petiții pe adresa de email menționată mai sus, pentru a putea urmări soluționarea acesteia.',
+      closing: 'Cu stimă,',
+      namePlaceholder: '[NUMELE TĂU COMPLET]',
+    },
   },
 
   // Authority

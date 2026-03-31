@@ -22,11 +22,13 @@ export const EmailInstructionsSheet = forwardRef<EmailInstructionsSheetRef>(
   function EmailInstructionsSheet(_props, ref) {
     const sheetRef = useRef<BottomSheetMethods>(null);
     const onContinueRef = useRef<(() => void) | null>(null);
+    const pendingContinueRef = useRef(false);
     const textSecondary = useThemeColor({}, 'textSecondary');
 
     useImperativeHandle(ref, () => ({
       open: (onContinue: () => void) => {
         onContinueRef.current = onContinue;
+        pendingContinueRef.current = false;
         sheetRef.current?.snapToIndex(0);
       },
       close: () => {
@@ -35,12 +37,19 @@ export const EmailInstructionsSheet = forwardRef<EmailInstructionsSheetRef>(
     }));
 
     const handleContinue = useCallback(() => {
+      pendingContinueRef.current = true;
       sheetRef.current?.close();
-      onContinueRef.current?.();
+    }, []);
+
+    const handleSheetChange = useCallback((index: number) => {
+      if (index === -1 && pendingContinueRef.current) {
+        pendingContinueRef.current = false;
+        onContinueRef.current?.();
+      }
     }, []);
 
     return (
-      <ThemedBottomSheet ref={sheetRef} snapPoints={SNAP_POINTS}>
+      <ThemedBottomSheet ref={sheetRef} snapPoints={SNAP_POINTS} onChange={handleSheetChange}>
         <View style={styles.content}>
           <ThemedText type="h3">{Localization.email.instructionsTitle}</ThemedText>
 
