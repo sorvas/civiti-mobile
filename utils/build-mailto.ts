@@ -1,10 +1,10 @@
 import { Localization } from '@/constants/localization';
 import type { IssueAuthorityResponse, IssueDetailResponse } from '@/types/issues';
+import { formatDateRomanian } from '@/utils/format-date-romanian';
 
 type BuildMailtoParams = {
   authority: IssueAuthorityResponse;
   issue: IssueDetailResponse;
-  userName: string | null;
 };
 
 export type EmailParts = {
@@ -13,66 +13,61 @@ export type EmailParts = {
   body: string;
 };
 
-export function buildEmailParts({ authority, issue, userName }: BuildMailtoParams): EmailParts {
+const { petition } = Localization.email;
+
+/**
+ * Build a legally-compliant petition email per Romanian OG 27/2002.
+ * Contains placeholder brackets the user must fill in their email client.
+ */
+export function buildEmailParts({ authority, issue }: BuildMailtoParams): EmailParts {
   const to = authority.email ?? '';
-  const district = issue.district ?? 'București';
 
-  const subject = `[URGENT] Sesizare cetățenească - ${issue.title ?? ''} - ${district}, București`;
+  const subject = petition.subjectTemplate(issue.title ?? '');
 
-  const categoryLabel =
-    Localization.category[issue.category as keyof typeof Localization.category] ?? issue.category;
-  const urgencyLabel =
-    Localization.urgency[issue.urgency as keyof typeof Localization.urgency] ?? issue.urgency;
+  const locationParts = [issue.address];
+  if (issue.district) locationParts.push(issue.district);
+  const locationString =
+    locationParts.filter(Boolean).join(', ') || petition.locationFallback;
 
-  const lines: string[] = [
-    `Stimată ${authority.name ?? 'autoritate'},`,
-    '',
-    'Vă scriu pentru a vă aduce la cunoștință o problemă comunitară care necesită atenția dumneavoastră.',
-    '',
-    'Detalii problemă:',
-    `- Titlu: ${issue.title ?? ''}`,
-    `- Locație: ${issue.address ?? ''}`,
-    `- Categorie: ${categoryLabel}`,
-    `- Urgență: ${urgencyLabel}`,
-    '',
-    'Descriere:',
-    issue.description ?? '',
-  ];
+  const createdDate = formatDateRomanian(issue.createdAt);
+  const currentDate = formatDateRomanian(new Date().toISOString());
 
-  if (issue.desiredOutcome) {
-    lines.push('', 'Rezultat dorit:', issue.desiredOutcome);
-  }
+  const communityImpactSection = issue.communityImpact?.trim()
+    ? `\n${issue.communityImpact.trim()}`
+    : '';
 
-  if (issue.communityImpact) {
-    lines.push('', 'Impact asupra comunității:', issue.communityImpact);
-  }
+  const desiredOutcomeText = issue.desiredOutcome?.trim()
+    ? issue.desiredOutcome.trim()
+    : petition.defaultDesiredOutcome;
 
-  const parsedDate = new Date(issue.createdAt);
-  const createdDate = Number.isNaN(parsedDate.getTime())
-    ? issue.createdAt
-    : parsedDate.toLocaleDateString('ro-RO');
+  const photoCount = issue.photos?.length ?? 0;
+  const photosSection =
+    photoCount > 0 ? `${petition.photosAttachment(photoCount)}\n` : '';
 
-  lines.push(
-    '',
-    `Această problemă a fost raportată pe ${createdDate}${issue.emailsSent > 0 ? ` și a fost deja semnalată de ${issue.emailsSent} cetățeni` : ''}.`,
-    '',
-    'Vă rog să interveniți pentru rezolvarea acestei situații.',
-    '',
-    'Cu stimă,',
-    userName ?? 'Un cetățean',
-    '',
-    '---',
-    `Referință: ${issue.id}`,
-    'Trimis prin platforma Civiti',
-  );
+  const authorityName = authority.name ?? petition.authorityFallback;
 
-  const body = lines.join('\n');
+  const body = `${petition.salutation(authorityName)}
+
+${petition.petitionerLine}
+
+${issue.title ?? ''}
+
+${petition.locationLabel} ${locationString}
+${petition.dateLabel} ${createdDate}
+
+${issue.description ?? ''}${communityImpactSection}
+
+${desiredOutcomeText}
+
+${photosSection}${petition.linkPrefix} https://civiti.ro/issues/${issue.id}
+
+${petition.legalParagraph}
+
+${petition.registrationRequest}
+
+${petition.closing}
+${petition.namePlaceholder}
+${currentDate}`;
 
   return { to, subject, body };
-}
-
-/** @deprecated Use buildEmailParts + openComposer instead */
-export function buildMailto(params: BuildMailtoParams): string {
-  const { to, subject, body } = buildEmailParts(params);
-  return `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
